@@ -7,6 +7,25 @@ It covers the same journeys as the website (S01–S14), reads data from `@forsa/
 
 ---
 
+## Open it right now in Safari (no Mac, no install)
+
+**https://azez-moh.github.io/forsa/app/**
+
+This is a browser preview of the same app, built with React Native Web and deployed with the website. Open it in Safari on the iPhone, then **Share → Add to Home Screen** to get a full-screen icon. On a desktop it shows inside a phone-width frame.
+
+The browser preview has the same screens, data and flows: Discover, الفرص, detail, inquiry → NDA → OTP, the Add wizard, Inbox pipeline, Profile, services, consultants, learn, about and FAQ. It is Arabic RTL by default, with English in Profile → اللغة.
+
+These differ from the native app:
+- Icons are Lucide outlines drawn to match the SF Symbols.
+- Page transitions are web transitions, not the native large-title collapse and zoom.
+- There are no haptics.
+- Face ID continues in demo mode (تجريبي).
+- No local notifications are sent.
+- Share uses the Safari share sheet, or copies the link.
+- Action sheets use an in-app sheet, and "تمت الصفقة" uses the browser's prompt.
+
+Build it locally with `npm run export:web -w @forsa/ios`; the output goes to `apps/ios/dist-web`. Regenerate the web icon map with `node apps/ios/scripts/gen-web-icons.mjs`.
+
 ## Run it on your iPhone
 
 ### Option A: Expo Go (fastest, about 5 minutes, no Mac needed)

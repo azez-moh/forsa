@@ -2,7 +2,7 @@ import { getConsultant, getOpportunity, getService } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, I18nManager, ScrollView, StyleSheet, View } from 'react-native';
+import { I18nManager, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
 
 import { Button } from '@/components/Button';
@@ -14,6 +14,7 @@ import { Text } from '@/components/Text';
 import { Badge, Card, EmptyState, Row } from '@/components/ui';
 import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
+import { alert } from '@/lib/dialogs';
 import { cityName, daysSince, num, relativeTime, sar, statusKey, typeColor, typeShort } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { applyDirection } from '@/lib/reload';
@@ -51,7 +52,7 @@ export default function Profile() {
     useApp.setState({ rtlBootReloads: 1 }); // the switch below handles the reload itself
     const wantRTL = next === 'ar';
     if (I18nManager.isRTL === wantRTL) return;
-    Alert.alert(t('langReloadTitle'), t('langReloadBody'), [
+    alert(t('langReloadTitle'), t('langReloadBody'), [
       { text: t('restartLater'), style: 'cancel', onPress: () => I18nManager.forceRTL(wantRTL) },
       {
         text: t('restartNow'),
@@ -59,7 +60,7 @@ export default function Profile() {
           // Let AsyncStorage flush the new language before reloading.
           await new Promise((r) => setTimeout(r, 300));
           const ok = await applyDirection(wantRTL);
-          if (!ok) Alert.alert(t('langReloadTitle'), t('restartManual'));
+          if (!ok) alert(t('langReloadTitle'), t('restartManual'));
         },
       },
     ]);
@@ -225,7 +226,7 @@ export default function Profile() {
             destructive
             last
             onPress={() =>
-              Alert.alert(t('signOutConfirm'), undefined, [
+              alert(t('signOutConfirm'), undefined, [
                 { text: t('cancel'), style: 'cancel' },
                 { text: t('signOut'), style: 'destructive', onPress: signOut },
               ])

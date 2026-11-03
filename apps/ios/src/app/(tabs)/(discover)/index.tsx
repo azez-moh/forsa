@@ -60,7 +60,7 @@ export default function Discover() {
           <Button title={t('addYourOpportunity')} icon="plus" onPress={() => router.push('/listing/new')} style={{ flex: 1 }} full />
           <Button
             title={t('browseOpportunities')}
-            variant="gray"
+            variant="onDark"
             onPress={() => router.push('/opportunities')}
             style={{ flex: 1 }}
             full

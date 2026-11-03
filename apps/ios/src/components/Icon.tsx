@@ -1,5 +1,7 @@
 import { SymbolView, type SFSymbol, type SymbolWeight } from 'expo-symbols';
-import { I18nManager, Text as RNText, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Text as RNText, View, type StyleProp, type ViewStyle } from 'react-native';
+
+import { isRTL } from '@/lib/direction';
 
 /** Text glyph fallbacks for platforms or OS versions without SF Symbols. */
 const FALLBACK: Record<string, string> = {
@@ -31,7 +33,7 @@ export function Icon({ name, size = 20, color, weight = 'regular', directional, 
   // (RTL: forward points left). Non-directional symbols are left untouched.
   let sym = name;
   if (directional) {
-    const rtl = I18nManager.isRTL;
+    const rtl = isRTL();
     sym = name
       .replace('.forward', rtl ? '.left' : '.right')
       .replace('.backward', rtl ? '.right' : '.left');

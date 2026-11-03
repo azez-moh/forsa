@@ -53,6 +53,19 @@
     ],
     "extra": {
       "supportsRTL": true
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro",
+      "favicon": "./assets/icon.png",
+      "name": "فرصة وتمكين",
+      "shortName": "فرصة",
+      "lang": "ar",
+      "themeColor": "#17234F",
+      "backgroundColor": "#17234F"
+    },
+    "experiments": {
+      "baseUrl": "/forsa/app"
     }
   }
 }

@@ -1,7 +1,7 @@
 import { opportunities, OpportunityType, type CityId } from '@forsa/data';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActionSheetIOS, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { activeFilterCount, emptyFilters, FilterSheet, PRICE_STEPS, type Filters } from '@/components/FilterSheet';
@@ -12,6 +12,7 @@ import { EmptyState, toast } from '@/components/ui';
 import { useT } from '@/i18n';
 import { cityName, TYPE_ORDER, typeSegment } from '@/lib/format';
 import { requireAuth } from '@/lib/auth';
+import { actionSheet } from '@/lib/dialogs';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
 import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
@@ -77,15 +78,17 @@ export default function OpportunitiesScreen() {
   };
   const openSort = () => {
     const keys = Object.keys(sortLabels) as Sort[];
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: t('sort'), options: [...keys.map((k) => sortLabels[k]), t('cancel')], cancelButtonIndex: keys.length },
-      (i) => {
+    actionSheet({
+      title: t('sort'),
+      options: [...keys.map((k) => sortLabels[k]), t('cancel')],
+      cancelIndex: keys.length,
+      onPick: (i) => {
         if (i < keys.length) {
           haptic.selection();
           setSort(keys[i]);
         }
       },
-    );
+    });
   };
   const nFilters = activeFilterCount(filters);
 

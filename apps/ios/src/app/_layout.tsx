@@ -3,10 +3,13 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { I18nManager, useColorScheme } from 'react-native';
+import { I18nManager, Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { PhoneFrame } from '@/components/PhoneFrame';
+import { webHeaderOptions } from '@/components/Screen';
 import { ToastHost } from '@/components/ui';
+import { WebActionSheetHost } from '@/components/WebActionSheetHost';
 import { translate } from '@/i18n';
 import { listenForNotificationTaps, watchInquiryStatus } from '@/lib/notify';
 import { applyDirection } from '@/lib/reload';
@@ -44,8 +47,19 @@ export default function RootLayout() {
     return () => clearTimeout(id);
   }, []);
 
+  // Web preview: I18nManager has no effect; the direction comes from the language via dir on <html>.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   useEffect(() => {
     if (!hydrated) return;
+    if (Platform.OS === 'web') {
+      SplashScreen.hideAsync().catch(() => {});
+      return;
+    }
     const wantRTL = lang === 'ar';
     const { rtlBootReloads } = useApp.getState();
     if (I18nManager.isRTL !== wantRTL && rtlBootReloads < 1) {
@@ -70,6 +84,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <PhoneFrame>
       <ThemeProvider value={theme}>
         <StatusBar style="auto" />
         <Stack
@@ -77,8 +92,9 @@ export default function RootLayout() {
             headerTintColor: c.primary,
             headerBackButtonDisplayMode: 'minimal',
             contentStyle: { backgroundColor: c.groupedBg },
-            headerTransparent: true,
-            headerBlurEffect: 'systemChromeMaterial',
+            ...(Platform.OS === 'web'
+              ? webHeaderOptions(c)
+              : { headerTransparent: true, headerBlurEffect: 'systemChromeMaterial' as const }),
             headerShadowVisible: false,
             headerLargeTitleShadowVisible: false,
           }}
@@ -121,7 +137,9 @@ export default function RootLayout() {
           <Stack.Screen name="faq" options={{ title: t('faqTitle'), headerLargeTitle: true }} />
         </Stack>
         <ToastHost />
+        {Platform.OS === 'web' ? <WebActionSheetHost /> : null}
       </ThemeProvider>
+      </PhoneFrame>
     </GestureHandlerRootView>
   );
 }

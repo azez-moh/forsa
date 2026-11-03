@@ -8,7 +8,8 @@ import { Icon } from './Icon';
 import { ScalePressable } from './Pressable';
 import { Text } from './Text';
 
-export type Variant = 'filled' | 'tinted' | 'gray' | 'plain' | 'destructive' | 'destructiveTinted';
+/** `onDark`: gray-style button for dark surfaces (the navy hero): translucent white fill, white label. */
+export type Variant = 'filled' | 'tinted' | 'gray' | 'plain' | 'destructive' | 'destructiveTinted' | 'onDark';
 
 type Props = {
   title: string;
@@ -39,6 +40,7 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
     filled: c.primary,
     tinted: c.primaryTint,
     gray: c.fillTertiary,
+    onDark: 'rgba(255,255,255,0.16)',
     plain: 'transparent',
     destructive: c.danger,
     destructiveTinted: c.dangerTint,
@@ -47,6 +49,7 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
     filled: c.onPrimary,
     tinted: c.primary,
     gray: c.labelPrimary,
+    onDark: c.onDark,
     plain: c.primary,
     destructive: '#FFFFFF',
     destructiveTinted: c.danger,

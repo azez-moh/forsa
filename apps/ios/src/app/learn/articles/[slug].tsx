@@ -1,9 +1,9 @@
-import { getArticle, opportunities } from '@forsa/data';
+import { getArticle, opportunities, articles } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { FlatList, ScrollView, Share, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
@@ -11,7 +11,13 @@ import { OpportunityCard } from '@/components/OpportunityCard';
 import { Text } from '@/components/Text';
 import { Card, EmptyState, SectionHeader } from '@/components/ui';
 import { useT } from '@/i18n';
+import { shareLink } from '@/lib/share';
 import { MARGIN, useTheme } from '@/theme';
+
+/** Web static export (browser preview): pre-render one page per record. Ignored on native. */
+export function generateStaticParams() {
+  return articles.map((a) => ({ slug: a.slug }));
+}
 
 /** S12 Article detail with linked opportunities (content ↔ listings). */
 export default function Article() {
@@ -28,7 +34,7 @@ export default function Article() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Button title="" icon="square.and.arrow.up" variant="plain" size="medium" accessibilityLabel={t('share')} onPress={() => Share.share({ message: `${a.title}\n${url}`, url }).catch(() => {})} />
+            <Button title="" icon="square.and.arrow.up" variant="plain" size="medium" accessibilityLabel={t('share')} onPress={() => shareLink({ title: a.title, message: a.title, url })} />
           ),
         }}
       />

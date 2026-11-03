@@ -216,6 +216,9 @@ type State = {
   book: (consultantId: number, day: string, time: string) => void;
 };
 
+/** No-op storage used only while pre-rendering the web preview in Node. */
+const ssrStorage = { getItem: async () => null, setItem: async () => {}, removeItem: async () => {} };
+
 const now = () => new Date().toISOString();
 const uid = (p: string) => `${p}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -304,7 +307,8 @@ export const useApp = create<State>()(
         }
         return st as unknown as State;
       },
-      storage: createJSONStorage(() => AsyncStorage),
+      // Static web rendering runs in Node without `window`; skip persistence there.
+      storage: createJSONStorage(() => (typeof window === 'undefined' ? ssrStorage : AsyncStorage)),
       partialize: ({ hydrated: _h, lastPublishedId: _p, ...rest }) => rest,
       onRehydrateStorage: () => () => {
         useApp.setState({ hydrated: true });

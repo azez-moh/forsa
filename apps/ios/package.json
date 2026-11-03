@@ -9,9 +9,12 @@
     "run:ios": "expo run:ios --device",
     "export": "expo export --platform ios",
     "typecheck": "tsc --noEmit -p .",
-    "doctor": "expo-doctor"
+    "doctor": "expo-doctor",
+    "web": "expo start --web",
+    "export:web": "expo export --platform web --output-dir dist-web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~58.0.16",
     "@forsa/data": "*",
     "@forsa/tokens": "*",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -34,16 +37,19 @@
     "expo-updates": "~58.0.20",
     "expo-web-browser": "~58.0.7",
     "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-native": "0.88.1",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.1",
+    "react-native-web": "~0.21.4",
     "react-native-worklets": "0.13.0",
     "zustand": "^5.0.16"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "lucide": "^1.67.0"
   }
 }

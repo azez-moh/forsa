@@ -1,4 +1,4 @@
-import { getOpportunity } from '@forsa/data';
+import { getOpportunity, opportunities } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -24,6 +24,11 @@ import { MARGIN, useTheme } from '@/theme';
 type Step = 'message' | 'nda' | 'otp' | 'success';
 
 const BUDGETS = [500_000, 1_000_000, 5_000_000, 10_000_000];
+
+/** Web static export (browser preview): pre-render one page per record. Ignored on native. */
+export function generateStaticParams() {
+  return opportunities.map((o) => ({ id: String(o.id) }));
+}
 
 /**
  * S04 Inquiry + NDA (formSheet): message → NDA review + typed-name signature → OTP → success.

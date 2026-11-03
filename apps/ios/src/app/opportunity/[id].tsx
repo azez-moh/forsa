@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { Link, router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Dimensions, Share, StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, {
   Extrapolation,
   FadeInUp,
@@ -31,6 +31,7 @@ import { useT, type StringKey } from '@/i18n';
 import { categoryName, cityName, countNoun, daysSince, statusKey, num, priceInWords, sarFull, stageLabel, typeColor, typeShort, typeSymbol } from '@/lib/format';
 import { biometricGate } from '@/lib/faceid';
 import { haptic } from '@/lib/haptics';
+import { shareLink } from '@/lib/share';
 import { isOwnListing, useApp } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
 
@@ -70,6 +71,11 @@ function buildMetrics(o: Opportunity, lang: 'ar' | 'en', t: (k: StringKey) => st
 }
 
 const DOCS = ['القوائم المالية 2024–2025.pdf', 'نموذج التدفقات النقدية.xlsx', 'عقد الإيجار والتراخيص.pdf'];
+
+/** Web static export (browser preview): pre-render one page per record. Ignored on native. */
+export function generateStaticParams() {
+  return opportunities.map((o) => ({ id: String(o.id) }));
+}
 
 export default function OpportunityDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -129,11 +135,7 @@ export default function OpportunityDetail() {
     const url = `https://forsh.sa/opportunities/${o.id}`;
     // NDA-required listings share public fields only.
     const message = `${o.title}\n${typeShort(o.type, lang)} · ${cityName(o.cityId, lang)}\n${sarFull(o.priceSar, lang)}\n${url}`;
-    try {
-      await Share.share({ message, url, title: o.title });
-    } catch {
-      // user cancelled
-    }
+    await shareLink({ message, url, title: o.title });
   };
 
   const openDoc = async (name: string) => {

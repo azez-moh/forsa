@@ -1,8 +1,8 @@
-import { getConsultant } from '@forsa/data';
+import { getConsultant, consultants } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, Share, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
@@ -14,6 +14,7 @@ import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
 import { cityName, dateLocale, sarFull } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
+import { shareLink } from '@/lib/share';
 import { useApp } from '@/store/app';
 import { MARGIN, typeStyle, useTheme } from '@/theme';
 
@@ -40,6 +41,11 @@ function nextDays(lang: 'ar' | 'en') {
     });
   }
   return out;
+}
+
+/** Web static export (browser preview): pre-render one page per record. Ignored on native. */
+export function generateStaticParams() {
+  return consultants.map((x) => ({ id: String(x.id) }));
 }
 
 /** S10 Consultant profile + slot booking. */
@@ -83,7 +89,7 @@ export default function ConsultantProfile() {
               variant="plain"
               size="medium"
               accessibilityLabel={t('share')}
-              onPress={() => Share.share({ message: `${x.name} · ${x.specialty}\n${x.sourceUrl}`, url: x.sourceUrl }).catch(() => {})}
+              onPress={() => shareLink({ title: x.name, message: `${x.name} · ${x.specialty}`, url: x.sourceUrl })}
             />
           ),
         }}

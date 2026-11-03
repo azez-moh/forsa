@@ -3,7 +3,7 @@ import { brandSource, opportunityTypes, radii } from '@forsa/tokens';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import Animated, { FadeIn, SlideInLeft, SlideInRight, useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,6 +16,7 @@ import { Text } from '@/components/Text';
 import { Badge, Card, Chip, DemoTag, ErrorText } from '@/components/ui';
 import { translate, useT, type StringKey } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
+import { alert } from '@/lib/dialogs';
 import { notifyLocal } from '@/lib/notify';
 import { cityName, parseAmount, priceInWords, sar, sarFull, stageLabel, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
@@ -445,7 +446,7 @@ export default function AddWizard() {
                     {t('commissionAgree')}
                   </Text>
                 </View>
-                <Button title={t('terms')} variant="plain" size="small" onPress={() => Alert.alert(t('terms'), t('aboutDisclaimer'))} />
+                <Button title={t('terms')} variant="plain" size="small" onPress={() => alert(t('terms'), t('aboutDisclaimer'))} />
                 {errors.agree ? (
                   <ErrorText>{errors.agree}</ErrorText>
                 ) : null}

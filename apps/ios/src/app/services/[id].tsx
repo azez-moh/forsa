@@ -1,8 +1,8 @@
-import { getProvider, getService } from '@forsa/data';
+import { getProvider, getService, services } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
@@ -14,8 +14,14 @@ import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
 import { cityName, sarFull } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
+import { shareLink } from '@/lib/share';
 import { useApp } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
+
+/** Web static export (browser preview): pre-render one page per record. Ignored on native. */
+export function generateStaticParams() {
+  return services.map((s) => ({ id: String(s.id) }));
+}
 
 /** S08 Service detail + request. */
 export default function ServiceDetail() {
@@ -55,7 +61,7 @@ export default function ServiceDetail() {
               variant="plain"
               size="medium"
               accessibilityLabel={t('share')}
-              onPress={() => Share.share({ message: `${s.title}\n${s.sourceUrl}`, url: s.sourceUrl }).catch(() => {})}
+              onPress={() => shareLink({ title: s.title, message: s.title, url: s.sourceUrl })}
             />
           ),
         }}

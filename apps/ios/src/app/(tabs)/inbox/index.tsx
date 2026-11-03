@@ -2,7 +2,7 @@ import { getOpportunity, type InquiryStatus } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActionSheetIOS, Alert, FlatList, Modal, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, Modal, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import { Text } from '@/components/Text';
 import { Badge, Card, EmptyState, toast } from '@/components/ui';
 import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
+import { actionSheet, prompt } from '@/lib/dialogs';
 import { PIPELINE, relativeTime, sar, sarFull, statusKey } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp, type IncomingInquiry, type SentInquiry } from '@/store/app';
@@ -72,49 +73,45 @@ function Pipeline({ header }: { header: React.ReactNode }) {
     toast(t(statusKey[to]));
   };
   const closeWon = (q: IncomingInquiry) => {
-    Alert.prompt(
+    prompt(
       t('markWon'),
       `${t('dealValuePrompt')}\n\n${t('commissionDue')}`,
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('done'),
-          onPress: (v?: string) => {
-            setStatus(q.id, 'closed-won', v ? Number(v.replace(/\D/g, '')) || undefined : undefined);
-            haptic.success();
-            setOpen(null);
-          },
-        },
-      ],
-      'plain-text',
-      '',
-      'number-pad',
+      (v) => {
+        setStatus(q.id, 'closed-won', v ? Number(v.replace(/\D/g, '')) || undefined : undefined);
+        haptic.success();
+        setOpen(null);
+      },
+      { ok: t('done'), cancel: t('cancel') },
     );
   };
   const decline = (q: IncomingInquiry) => {
     const reasons = [t('declineReason1'), t('declineReason2'), t('declineReason3')];
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: t('decline'), options: [...reasons, t('cancel')], cancelButtonIndex: reasons.length, destructiveButtonIndex: undefined },
-      (i) => {
+    actionSheet({
+      title: t('decline'),
+      options: [...reasons, t('cancel')],
+      cancelIndex: reasons.length,
+      onPick: (i) => {
         if (i < reasons.length) {
           setStatus(q.id, 'closed-lost');
           haptic.warning();
           setOpen(null);
         }
       },
-    );
+    });
   };
   const moveTo = (q: IncomingInquiry) => {
     const opts: InquiryStatus[] = ['new', 'nda-sent', 'nda-signed', 'in-discussion', 'meeting', 'closed-won', 'closed-lost'];
-    ActionSheetIOS.showActionSheetWithOptions(
-      { title: t('moveTo'), options: [...opts.map((s) => t(statusKey[s])), t('cancel')], cancelButtonIndex: opts.length },
-      (i) => {
+    actionSheet({
+      title: t('moveTo'),
+      options: [...opts.map((s) => t(statusKey[s])), t('cancel')],
+      cancelIndex: opts.length,
+      onPick: (i) => {
         if (i >= opts.length) return;
         if (opts[i] === 'closed-won') return closeWon(q);
         setStatus(q.id, opts[i]);
         haptic.selection();
       },
-    );
+    });
   };
 
   return (

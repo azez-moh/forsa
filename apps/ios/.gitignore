@@ -11,3 +11,4 @@ android/
 *.mobileprovision
 *.orig.*
 expo-env.d.ts
+dist-web/
