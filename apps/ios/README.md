@@ -11,13 +11,14 @@ It covers the same journeys as the website (S01–S14), reads data from `@forsa/
 
 ### Option A: Expo Go (fastest, about 5 minutes, no Mac needed)
 
-1. On the iPhone, install **Expo Go** from the App Store. It must be the build that supports **SDK 58**.
-2. On a computer (Mac or PC) with Node 20+ and the repo cloned:
+1. On the iPhone, install **Expo Go** from the App Store. The App Store build only runs the **latest** Expo SDK, so it needs to be the build that supports **SDK 58**. If Expo Go says the project is incompatible, use Option B.
+2. On a computer (Mac or PC) with **Node 22.13+ or Node 24 LTS** (React Native 0.88 and Expo 58 don't support Node 20) and the repo cloned:
    ```bash
    cd forsa
-   npm install            # from the repo root (npm workspaces)
-   npm run ios            # = expo start, inside apps/ios
+   npm install                   # from the repo root (npm workspaces)
+   npm start -w @forsa/ios       # = expo start in apps/ios (shows the QR code)
    ```
+   `npm run ios` also tries to open the iOS Simulator, so only use it on a Mac with Xcode.
    If the phone and the computer are on different networks, use `npx expo start --tunnel` from `apps/ios`.
 3. Scan the QR code with the iPhone Camera. The app opens in Expo Go.
 4. **First launch:** the app reloads once by itself to switch into right-to-left. This is expected and only happens once.
@@ -29,15 +30,26 @@ What's different in Expo Go:
 
 ### Option B: Native build on your own iPhone (needs a Mac with Xcode 26+)
 
+One-time setup:
+- Plug in the iPhone and tap **Trust This Computer**.
+- On the iPhone, turn on **Settings → Privacy & Security → Developer Mode**. iOS asks you to restart.
+- The first build runs `expo prebuild` and CocoaPods automatically, which takes a few minutes. When Xcode asks for a **Team**, pick your Apple ID. A free account works for 7-day installs; the app uses local notifications only, so no push entitlement is needed.
+- After the first install, trust the developer profile under **Settings → General → VPN & Device Management**.
+
+**B1. Debug build (for development, needs Metro running)**
 ```bash
 cd forsa && npm install
 cd apps/ios
-npx expo run:ios --device     # choose your plugged-in iPhone
+npx expo run:ios --device                            # pick your iPhone
 ```
+The app loads its JavaScript from Metro on your Mac, so keep the terminal open and the phone on the same Wi-Fi. The language switch reloads through the dev reloader.
 
-- The first time, Xcode asks for a **Team**. Pick your Apple ID; a free account works for 7-day installs.
-- On the iPhone, trust the developer profile under **Settings → General → VPN & Device Management**.
-- This build uses the real Arabic and English Face ID usage text, the Arabic display name, and `expo-updates` for the language reload.
+**B2. Release build (standalone, best for the pitch)**
+```bash
+cd apps/ios
+npx expo run:ios --device --configuration Release
+```
+The JavaScript is bundled into the app, so it runs without the Mac. It shows the real Arabic and English Face ID text and the Arabic home-screen name, and the language switch restarts the app with `expo-updates` (`Updates.reloadAsync`).
 
 ### Option C: TestFlight with EAS (to share with the Forsa team)
 
@@ -81,13 +93,19 @@ cd apps/ios && npx expo-doctor                               # needs internet to
 | S13 | Auth sheet, shown only when an action needs it: +966 phone → OTP (one-time-code autofill) → name and role; mocked Nafath | `src/app/auth/index.tsx` |
 | S14 | About + contact, FAQ | `src/app/about.tsx`, `src/app/faq.tsx` |
 
-### Demo script (about 2 minutes)
-1. **Discover:** watch the counter roll up, then tap a featured card. It zooms into the detail; scroll to see the parallax.
+### Demo script (about 3 minutes)
+The demo account plays two roles. It is an **investor** on any listing, and the **owner** of listing **#1124** (مركز رعاية نهارية). Use **#704** (ورق عنب، 9 فروع) or **#932** for the investor path; both are featured NDA listings owned by someone else. #1124 is kept out of the featured strip on purpose.
+
+**Investor path (#704 or #932)**
+1. **Discover:** watch the counter roll up, then tap the first featured card (#704). It zooms into the detail; scroll to see the parallax.
 2. Tap **طلب تواصل**. Write a message, tap **متابعة** and sign in with any `5XXXXXXXX` number and any 4-digit code.
-3. Sign the NDA by typing your full name, enter the OTP, and you get the success screen with a haptic.
-4. Back on the detail page, tap **محاكاة موافقة المالك** (تجريبي), then open a document. Face ID appears and the document opens with a watermark.
-5. Tap **+** to start a listing and go through the steps. Accept the commission and tap **انشر الفرصة**. The card flies into فرصي and flips from قيد المراجعة to منشورة.
-6. **Inbox:** swipe an inquiry to move it to the next stage, or long-press it for **نقل إلى…**.
+3. Sign the NDA by typing your full name, then enter the OTP. The success screen appears with a haptic, and a card offers to turn on notifications (تجريبي). Tap **فعّل التنبيهات** and allow.
+4. Back on the detail page, tap **محاكاة موافقة المالك** (تجريبي). A local notification arrives. Open a document: Face ID appears and the document opens with a watermark.
+
+**Owner path (#1124)**
+5. **Inbox → الطلبات الواردة:** these are inquiries on #1124. Swipe a row to move it to the next stage, long-press for **نقل إلى…**, or open one and tap **منح الوصول للمستندات** or **تمت الصفقة**.
+6. Tap **+** and publish a listing. Accept the commission, then tap **انشر الفرصة**. The card flies into فرصي and flips from قيد المراجعة to منشورة, and about 8 seconds later a mock **استفسار جديد على فرصتك** notification opens the Inbox.
+7. Opening #1124 while signed in shows **إدارة الفرصة** instead of طلب تواصل.
 
 ### HIG details
 - System font: SF Arabic and SF Pro are picked automatically. Sizes come from the Dynamic Type scale in the tokens, and Arabic gets extra line height.
@@ -96,9 +114,13 @@ cd apps/ios && npx expo-doctor                               # needs internet to
 - Native large titles collapse into a blurred nav bar (`headerLargeTitle` + `headerTransparent` + `headerBlurEffect`). The floating tab bar is an `expo-blur` glass capsule.
 - Icons are SF Symbols via `expo-symbols`, with text fallbacks. Directional chevrons mirror in RTL.
 - With Reduce Motion on, the counter shows its final value right away, parallax is off, and transitions become crossfades.
+- Dynamic Type: text scales up to 2.4× (AX3). Buttons, chips, day cells and OTP boxes use minimum heights and grow with the text.
+- VoiceOver: cards read as one element, toasts and validation errors are announced, and icon-only buttons are labelled.
+- Notifications (US-IOS-05): local only, no APNs. The permission explainer appears after the first inquiry, never at launch. Each notification carries a "تجريبي" subtitle and deep-links into the app.
+- Face ID: if a device has no biometrics or passcode (for example the simulator), the document opens with a "demo mode" notice instead of being blocked. This is deliberate for the demo; a production app would refuse.
 
 ### Language / RTL
-Arabic (RTL) is the default. **Profile → اللغة → English** switches to LTR. React Native only applies a direction change after a restart, so the app asks and then reloads itself (`expo-updates` `reloadAsync` in release builds, the dev reloader in Expo Go). Listing content stays in Arabic in English mode, because the source data is Arabic.
+Arabic (RTL) is the default. **Profile → اللغة → English** switches to LTR. React Native only applies a direction change after a restart, so the app asks and then reloads itself: `expo-updates` `reloadAsync` in Release builds (this works without an update URL), and the dev reloader in Debug and Expo Go. If neither is possible, the app says so and you close and reopen it. At launch, the splash screen hides after 2.5 s at the latest, whatever direction the app is in. Listing content stays in Arabic in English mode, because the source data is Arabic.
 
 ### Monorepo
 `metro.config.js` watches the repo root and resolves `node_modules` from the app first and then the root. It also pins one copy of `react`, because `apps/web` hoists a newer React patch to the root.

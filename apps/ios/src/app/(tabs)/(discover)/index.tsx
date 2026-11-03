@@ -14,6 +14,7 @@ import { Card, SectionHeader } from '@/components/ui';
 import { useT } from '@/i18n';
 import { num, sar, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
+import { DEMO_OWNER_ID } from '@/store/app';
 import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
 
 /** S01 Discover: hero counter, four ways in, featured, cities, how it works, services, consultants, learn. */
@@ -21,7 +22,11 @@ export default function Discover() {
   const { c } = useTheme();
   const { t, lang, loc } = useT();
   const [refreshing, setRefreshing] = useState(false);
-  const featured = featuredOpportunities();
+  // The demo user owns #1124 (owner path), so it stays out of the investor-facing featured strip.
+  // NDA listings 704 and 932 lead it: they are the investor walk-through in the README.
+  const featured = featuredOpportunities()
+    .filter((o) => o.ownerId !== DEMO_OWNER_ID)
+    .sort((a, b) => Number(b.ndaRequired) - Number(a.ndaRequired));
 
   const cityStats = cities
     .map((city) => {
