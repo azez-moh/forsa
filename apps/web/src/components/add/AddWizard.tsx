@@ -15,6 +15,7 @@ import { OpportunityCard } from '@/components/ui/OpportunityCard';
 import { cn } from '@/lib/cn';
 import type { DictKey } from '@/lib/i18n';
 import { qualityFlags } from './quality';
+import { TypeFields, validateTypeFields } from './TypeFields';
 
 export interface Draft {
   type: OpportunityType | null;
@@ -32,6 +33,18 @@ export interface Draft {
   employees: string;
   nda: boolean;
   photos: number;
+  // US-LST-02 type-specific fields
+  saleReason: string;
+  leaseYears: string;
+  useOfFunds: string;
+  payback: string;
+  roi: string;
+  roleSought: string;
+  contribution: string;
+  commitment: string;
+  teamSize: string;
+  traction: string;
+  hasMvp: boolean;
 }
 
 const EMPTY: Draft = {
@@ -50,6 +63,17 @@ const EMPTY: Draft = {
   employees: '',
   nda: true,
   photos: 0,
+  saleReason: '',
+  leaseYears: '',
+  useOfFunds: '',
+  payback: '',
+  roi: '',
+  roleSought: '',
+  contribution: '',
+  commitment: '',
+  teamSize: '',
+  traction: '',
+  hasMvp: false,
 };
 
 const DRAFT_KEY = 'forsa.addDraft.v1';
@@ -98,7 +122,6 @@ export function AddWizard() {
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }));
   const isIdea = d.type === OpportunityType.InvestorForIdea;
-  const needsEquity = d.type === OpportunityType.Investment || d.type === OpportunityType.InvestorForIdea || d.type === OpportunityType.PartnerSearch;
   const flags = useMemo(() => qualityFlags(d), [d]);
 
   const validate = (s: number): Record<string, string> => {
@@ -116,11 +139,7 @@ export function AddWizard() {
     if (s === 2) {
       const p = num(d.price);
       if (!p || p <= 0) e.price = t('priceInvalid');
-      const eq = num(d.equity);
-      if (needsEquity && (eq === undefined || eq < 1 || eq > 100)) e.equity = t('equityInvalid');
-      if (!needsEquity && eq !== undefined && (eq < 1 || eq > 100)) e.equity = t('equityInvalid');
-      const m = num(d.margin);
-      if (m !== undefined && (m < 0 || m > 100)) e.margin = t('equityInvalid');
+      Object.assign(e, validateTypeFields(d, t));
     }
     return e;
   };
@@ -161,6 +180,7 @@ export function AddWizard() {
         profitMargin: num(d.margin) !== undefined ? num(d.margin)! / 100 : undefined,
         branches: isIdea ? undefined : num(d.branches),
         employees: isIdea ? undefined : num(d.employees),
+        paybackMonths: num(d.payback),
         ndaRequired: d.nda,
         negotiable: d.negotiable,
         photos: d.photos,
@@ -189,6 +209,7 @@ export function AddWizard() {
       profitMargin: num(d.margin) !== undefined ? num(d.margin)! / 100 : undefined,
       branches: isIdea ? undefined : num(d.branches),
       employees: isIdea ? undefined : num(d.employees),
+      paybackMonths: num(d.payback),
     },
     highlights: [],
     featured: false,
@@ -209,7 +230,7 @@ export function AddWizard() {
           initial={reduce ? { opacity: 0 } : { scale: 0.5, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={reduce ? { duration: 0.15 } : { type: 'spring', stiffness: 158, damping: 17.6 }}
-          className={cn('grid size-24 place-items-center rounded-full', published.flagged ? 'bg-[color-mix(in_srgb,var(--color-warning)_16%,transparent)] text-warning' : 'bg-primary-tint text-primary')}
+          className={cn('grid size-24 place-items-center rounded-full', published.flagged ? 'bg-[color-mix(in_srgb,var(--color-warning)_16%,transparent)] text-warning' : 'bg-primary-tint text-primary-text')}
         >
           {published.flagged ? <AlertTriangle size={44} strokeWidth={1.5} aria-hidden /> : <CheckCircle2 size={44} strokeWidth={1.5} aria-hidden />}
         </motion.span>
@@ -290,13 +311,23 @@ export function AddWizard() {
                             role="radio"
                             aria-checked={active}
                             name="type"
-                            onClick={() => set('type', ty)}
+                            onClick={() =>
+                              setD((x) =>
+                                x.type === ty
+                                  ? x
+                                  : {
+                                      ...EMPTY,
+                                      ...{ title: x.title, summary: x.summary, categoryId: x.categoryId, cityId: x.cityId, stage: x.stage, price: x.price, negotiable: x.negotiable, nda: x.nda, photos: x.photos },
+                                      type: ty,
+                                    },
+                              )
+                            }
                             className={cn(
                               'flex min-h-28 flex-col items-start gap-2 rounded-lg p-5 text-start transition-[box-shadow,background-color] duration-200',
                               active ? 'bg-primary-tint shadow-[0_0_0_2px_var(--color-primary)]' : 'bg-bg-2 hover:bg-fill-3',
                             )}
                           >
-                            <Icon size={24} strokeWidth={1.5} aria-hidden className={active ? 'text-primary' : 'text-label-2'} />
+                            <Icon size={24} strokeWidth={1.5} aria-hidden className={active ? 'text-primary-text' : 'text-label-2'} />
                             <span className="t-headline">{typeLabel(ty, locale, false)}</span>
                             <span className="text-[15px] text-label-2">{t(TYPE_META[ty].desc)}</span>
                           </button>
@@ -355,7 +386,7 @@ export function AddWizard() {
                     <div>
                       <TextField
                         name="price"
-                        label={t('fieldPrice')}
+                        label={t(d.type === OpportunityType.ForSale ? 'fieldPriceSale' : d.type === OpportunityType.PartnerSearch ? 'fieldPricePartner' : 'fieldPriceInvest')}
                         error={errors.price}
                         inputMode="numeric"
                         dir="ltr"
@@ -377,27 +408,7 @@ export function AddWizard() {
                     <CheckboxRow checked={d.negotiable} onChange={(v) => set('negotiable', v)}>
                       {t('fieldNegotiable')}
                     </CheckboxRow>
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      <TextField
-                        name="equity"
-                        label={t('fieldEquity')}
-                        optionalLabel={needsEquity ? undefined : t('optional')}
-                        error={errors.equity}
-                        inputMode="numeric"
-                        dir="ltr"
-                        className="text-start tabular"
-                        value={d.equity}
-                        onChange={(e) => set('equity', digits(e.target.value).slice(0, 3))}
-                      />
-                      <TextField name="revenue" label={t('fieldRevenue')} optionalLabel={t('optional')} inputMode="numeric" dir="ltr" className="text-start tabular" value={d.revenue ? Number(d.revenue).toLocaleString('en-US') : ''} onChange={(e) => set('revenue', digits(e.target.value))} />
-                      <TextField name="margin" label={t('fieldMargin')} optionalLabel={t('optional')} error={errors.margin} inputMode="decimal" dir="ltr" className="text-start tabular" value={d.margin} onChange={(e) => set('margin', digits(e.target.value).slice(0, 5))} />
-                      {!isIdea && (
-                        <>
-                          <TextField name="branches" label={t('fieldBranches')} optionalLabel={t('optional')} inputMode="numeric" dir="ltr" className="text-start tabular" value={d.branches} onChange={(e) => set('branches', digits(e.target.value).slice(0, 4))} />
-                          <TextField name="employees" label={t('fieldEmployees')} optionalLabel={t('optional')} inputMode="numeric" dir="ltr" className="text-start tabular" value={d.employees} onChange={(e) => set('employees', digits(e.target.value).slice(0, 5))} />
-                        </>
-                      )}
-                    </div>
+                    <TypeFields d={d} set={set} errors={errors} />
                     <CheckboxRow checked={d.nda} onChange={(v) => set('nda', v)}>
                       {t('fieldNda')}
                     </CheckboxRow>
@@ -411,8 +422,8 @@ export function AddWizard() {
                     </h2>
                     <p className="text-[17px] text-label-2">{t('mediaBody')}</p>
                     <label className="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-separator bg-bg-2 p-8 text-center hover:bg-fill-3 focus-within:shadow-[0_0_0_3px_var(--color-focus)]">
-                      <ImagePlus size={32} strokeWidth={1.5} aria-hidden className="text-primary" />
-                      <span className="t-headline text-primary">{t('mediaPick')}</span>
+                      <ImagePlus size={32} strokeWidth={1.5} aria-hidden className="text-primary-text" />
+                      <span className="t-headline text-primary-text">{t('mediaPick')}</span>
                       <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => set('photos', Math.min(10, e.target.files?.length ?? 0))} />
                       {d.photos > 0 && (
                         <span className="text-[15px] text-label-2">
@@ -501,7 +512,7 @@ function ReviewCard({ d, onEdit }: { d: Draft; onEdit: (step: number) => void })
   const row = (label: string, value: string | undefined) => (
     <div className="flex justify-between gap-4 py-2 text-[15px]">
       <dt className="text-label-2">{label}</dt>
-      <dd className="text-end font-medium tabular">
+      <dd className="max-w-[60%] text-end font-medium tabular">
         <bdi>{value || '—'}</bdi>
       </dd>
     </div>
@@ -536,9 +547,40 @@ function ReviewCard({ d, onEdit }: { d: Draft; onEdit: (step: number) => void })
         2,
         <>
           {row(t('fieldPrice'), sar(d.price))}
-          {row(t('fieldEquity'), d.equity ? `${d.equity}%` : undefined)}
-          {row(t('fieldRevenue'), sar(d.revenue))}
-          {row(t('fieldMargin'), d.margin ? `${d.margin}%` : undefined)}
+          {d.type === OpportunityType.ForSale && (
+            <>
+              {row(t('fieldSaleReason'), d.saleReason ? t(d.saleReason as DictKey) : undefined)}
+              {row(t('fieldRevenue'), sar(d.revenue))}
+              {row(t('fieldMargin'), d.margin ? `${d.margin}%` : undefined)}
+              {row(t('fieldBranches'), d.branches)}
+              {row(t('fieldEmployees'), d.employees)}
+              {row(t('fieldLeaseYears'), d.leaseYears)}
+            </>
+          )}
+          {d.type === OpportunityType.Investment && (
+            <>
+              {row(t('fieldEquity'), d.equity ? `${d.equity}%` : undefined)}
+              {row(t('fieldUseOfFunds'), d.useOfFunds)}
+              {row(t('fieldPayback'), d.payback)}
+              {row(t('fieldRoi'), d.roi ? `${d.roi}%` : undefined)}
+            </>
+          )}
+          {d.type === OpportunityType.PartnerSearch && (
+            <>
+              {row(t('fieldRoleSought'), d.roleSought ? t(d.roleSought as DictKey) : undefined)}
+              {row(t('fieldSplit'), d.equity ? `${d.equity}%` : undefined)}
+              {row(t('fieldContribution'), d.contribution)}
+              {row(t('fieldCommitment'), d.commitment ? t(d.commitment as DictKey) : undefined)}
+            </>
+          )}
+          {d.type === OpportunityType.InvestorForIdea && (
+            <>
+              {row(t('fieldEquity'), d.equity ? `${d.equity}%` : undefined)}
+              {row(t('fieldTeamSize'), d.teamSize)}
+              {row(t('fieldTraction'), d.traction)}
+              {row(t('fieldHasMvp'), d.hasMvp ? '✓' : '—')}
+            </>
+          )}
           {row(t('ndaRequired'), d.nda ? '✓' : '—')}
         </>,
       )}

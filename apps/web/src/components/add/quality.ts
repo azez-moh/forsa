@@ -11,6 +11,8 @@ export function qualityFlags(d: Draft): DictKey[] {
   if ([...typeNames, ...cityNames].some((n) => n === title)) flags.push('flagTitleGeneric');
   if (d.type === OpportunityType.ForSale && Number(d.price) > 0 && Number(d.price) < 10_000) flags.push('flagPriceLow');
   if (d.summary.trim().length < 80) flags.push('flagSummaryShort');
-  if (!d.revenue && !d.margin && d.type !== OpportunityType.InvestorForIdea) flags.push('flagNoMetrics');
+  if (d.type === OpportunityType.ForSale && !d.margin && !d.employees) flags.push('flagNoMetrics');
+  if (d.type === OpportunityType.Investment && !d.payback && !d.roi) flags.push('flagNoMetrics');
+  if (d.type === OpportunityType.InvestorForIdea && !d.traction.trim() && !d.hasMvp) flags.push('flagNoTraction');
   return flags;
 }
