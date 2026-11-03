@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import {
   AnimatePresence,
@@ -11,13 +12,28 @@ import {
 } from 'motion/react';
 import { CountUp, EASE_OUT, formatInt, typeColor, typeHex, usePrefersReducedMotion, type WowLocale } from './shared';
 
+export interface TypeStoryExample {
+  title: string;
+  /** e.g. "الرياض · 1.5 مليون ر.س" */
+  meta: string;
+  href: string;
+}
+
 export interface TypeStoryItem {
   id: number;
   nameAr: string;
   nameEn: string;
-  count: number;
+  /**
+   * Real platform total for this type (platformStats). Omit when the platform does not publish one:
+   * the chapter then shows no count rather than a demo figure (QA P1-5).
+   */
+  count?: number;
   descriptionAr: string;
   descriptionEn: string;
+  /** Explore link for this type, e.g. /opportunities/?type=for-sale */
+  href: string;
+  /** One real example listing for the chapter. */
+  example?: TypeStoryExample;
 }
 
 export interface TypeStoryProps {
@@ -26,8 +42,8 @@ export interface TypeStoryProps {
 }
 
 const COPY = {
-  ar: { eyebrow: 'أربعة أبواب للفرصة', unit: 'فرصة', of: 'من' },
-  en: { eyebrow: 'Four doors to an opportunity', unit: 'opportunities', of: 'of' },
+  ar: { eyebrow: 'أربعة أبواب للفرصة', unit: 'فرصة على المنصة', of: 'من', example: 'مثال من المنصة', browse: 'استعرض', source: 'بحسب تقرير المنصة لشهر أغسطس 2026' },
+  en: { eyebrow: 'Four doors to an opportunity', unit: 'on the platform', of: 'of', example: 'Example listing', browse: 'Browse', source: 'Per the platform report, August 2026' },
 } as const;
 
 /** A tiny glyph per type, drawn in SVG (sale tag, growth line, two links, spark). */
@@ -86,6 +102,14 @@ function Segment({ progress, index, total, color }: { progress: MotionValue<numb
   );
 }
 
+function Arrow() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 rtl:rotate-180" aria-hidden fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 function StoryCardContent({ item, locale, total, index, countOnView = false }: { item: TypeStoryItem; locale: WowLocale; total: number; index: number; countOnView?: boolean }) {
   const { name, description } = useCopy(item, locale);
   const t = COPY[locale];
@@ -109,20 +133,44 @@ function StoryCardContent({ item, locale, total, index, countOnView = false }: {
         </span>
       </div>
 
-      <h3 className="mt-8 text-3xl font-bold leading-tight text-white md:text-[2.75rem]" style={{ letterSpacing: locale === 'en' ? '-0.02em' : 0 }}>
+      <h3 className="mt-6 text-3xl font-bold leading-tight text-white md:text-[2.5rem]" style={{ letterSpacing: locale === 'en' ? '-0.02em' : 0 }}>
         {name}
       </h3>
+      <p className="mt-3 max-w-md text-lg leading-relaxed text-white/70">{description}</p>
 
-      <p className="mt-4 max-w-md text-lg leading-relaxed text-white/65">{description}</p>
+      {typeof item.count === 'number' && (
+        <div className="mt-6 flex items-baseline gap-3">
+          <bdi dir="ltr" className="font-[family-name:var(--font-latin)] text-5xl font-bold leading-none text-white md:text-6xl">
+            <span className="sr-only">{formatInt(item.count)}</span>
+            <span aria-hidden>
+              <CountUp value={item.count} duration={0.9} startOnView={countOnView} />
+            </span>
+          </bdi>
+          <span className="text-base text-white/70">{t.unit}</span>
+        </div>
+      )}
 
-      <div className="mt-auto flex items-baseline gap-3 pt-10">
-        <bdi dir="ltr" className="font-[family-name:var(--font-latin)] text-6xl font-bold leading-none text-white md:text-7xl">
-          <span className="sr-only">{formatInt(item.count)}</span>
-          <span aria-hidden>
-            <CountUp value={item.count} duration={0.9} startOnView={countOnView} />
+      {item.example && (
+        <Link
+          href={item.example.href}
+          className="mt-6 block rounded-2xl border border-white/12 bg-white/[0.06] p-4 transition-colors hover:bg-white/[0.1] focus-visible:outline-white/80"
+        >
+          <span className="block text-xs font-medium text-white/70">{t.example}</span>
+          <span className="mt-1 line-clamp-2 block text-base font-bold leading-snug text-white">{item.example.title}</span>
+          <span className="mt-1 block text-sm text-white/70">
+            <bdi>{item.example.meta}</bdi>
           </span>
-        </bdi>
-        <span className="text-lg text-white/55">{t.unit}</span>
+        </Link>
+      )}
+
+      <div className="mt-auto pt-6">
+        <Link
+          href={item.href}
+          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-bold text-[#17234F] transition-[filter] hover:brightness-95 focus-visible:outline-white/80"
+        >
+          {t.browse} {name}
+          <Arrow />
+        </Link>
       </div>
     </div>
   );
@@ -149,7 +197,7 @@ function StickyStory({ types, locale }: { types: TypeStoryItem[]; locale: WowLoc
   if (!item) return null;
 
   return (
-    <div ref={ref} className="relative" style={{ height: `${Math.max(2, total) * 75 + 25}vh` }}>
+    <div ref={ref} className="relative" style={{ height: `${Math.min(200, Math.max(2, total) * 40 + 40)}vh` }}>
       <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden px-6">
         {/* Ambient hue that follows the active type */}
         <motion.div
@@ -160,13 +208,13 @@ function StickyStory({ types, locale }: { types: TypeStoryItem[]; locale: WowLoc
         />
 
         <div className="relative w-full max-w-xl">
-          <p className="mb-6 text-center text-sm font-medium text-white/50">{t.eyebrow}</p>
+          <p className="mb-6 text-center text-sm font-medium text-white/70">{t.eyebrow}</p>
 
           <motion.article
             className="relative overflow-hidden rounded-[2rem] border border-white/12 p-8 shadow-[0_40px_120px_-40px_rgba(0,0,0,0.6)] md:p-10"
             style={{
               scale: cardScale,
-              minHeight: 'min(520px, 70svh)',
+              minHeight: 'min(500px, 72svh)',
               background: 'linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04))',
               backdropFilter: 'blur(28px) saturate(1.6)',
               WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
@@ -188,7 +236,7 @@ function StickyStory({ types, locale }: { types: TypeStoryItem[]; locale: WowLoc
                 exit={reduce ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -10, filter: 'blur(6px)' }}
                 transition={{ duration: reduce ? 0 : 0.45, ease: EASE_OUT }}
                 className="h-full"
-                style={{ minHeight: 'calc(min(520px, 70svh) - 7.5rem)', display: 'flex', flexDirection: 'column' }}
+                style={{ minHeight: 'calc(min(500px, 72svh) - 7.5rem)', display: 'flex', flexDirection: 'column' }}
               >
                 <StoryCardContent item={item} locale={locale} total={total} index={active} />
               </motion.div>
@@ -207,7 +255,7 @@ function SnapCarousel({ types, locale }: { types: TypeStoryItem[]; locale: WowLo
   const t = COPY[locale];
   return (
     <div className="py-16">
-      <p className="mb-6 px-6 text-sm font-medium text-white/50">{t.eyebrow}</p>
+      <p className="mb-6 px-6 text-sm font-medium text-white/70">{t.eyebrow}</p>
       <ul
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-6 px-6 pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label={t.eyebrow}
@@ -217,7 +265,7 @@ function SnapCarousel({ types, locale }: { types: TypeStoryItem[]; locale: WowLo
             key={item.id}
             className="relative flex w-[82%] shrink-0 snap-start flex-col overflow-hidden rounded-[1.75rem] border border-white/12 p-6"
             style={{
-              minHeight: 360,
+              minHeight: 440,
               background: `radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, ${typeColor(item.id)} 35%, transparent), transparent 60%), linear-gradient(160deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03))`,
             }}
           >
@@ -236,18 +284,25 @@ function SnapCarousel({ types, locale }: { types: TypeStoryItem[]; locale: WowLo
  */
 export function TypeStory({ types, locale }: TypeStoryProps) {
   if (!types.length) return null;
+  const t = COPY[locale];
   return (
     <section
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
+      aria-labelledby="fz-typestory-h"
       className="relative isolate w-full text-white"
       style={{ background: 'linear-gradient(180deg, #070C22 0%, var(--color-navy-deep, #0E1738) 40%, var(--color-navy-deep, #0E1738) 100%)' }}
     >
+      {/* Heading order (QA P2-10): chapter titles are h3 under this h2. */}
+      <h2 id="fz-typestory-h" className="sr-only">
+        {t.eyebrow}
+      </h2>
       <div className="hidden md:block">
         <StickyStory types={types} locale={locale} />
       </div>
       <div className="md:hidden">
         <SnapCarousel types={types} locale={locale} />
       </div>
+      {types.some((x) => typeof x.count === 'number') && <p className="px-6 pb-10 text-center text-xs text-white/60">{t.source}</p>}
     </section>
   );
 }

@@ -1,9 +1,12 @@
 /**
- * Single import point for the Wow agent's components (src/components/wow/, owned by another agent).
- * Fallbacks.tsx keeps same-contract stand-ins in case the wow folder is ever removed; to use them,
- * swap these re-exports for `export { HeroCounterFallback as HeroCounter, ... } from './Fallbacks'`.
+ * Single import point for the wow/ motion components.
+ * HeroCounter (above the fold) and TiltCard (tiny) load eagerly; TypeStory and CityMap are code-split
+ * and only mounted near the viewport via <Deferred> (QA P2-9).
  */
+import dynamic from 'next/dynamic';
+
 export { HeroCounter } from '@/components/wow/HeroCounter';
-export { TypeStory } from '@/components/wow/TypeStory';
-export { CityMap } from '@/components/wow/CityMap';
 export { TiltCard } from '@/components/wow/TiltCard';
+
+export const TypeStory = dynamic(() => import('@/components/wow/TypeStory').then((m) => m.TypeStory), { ssr: false });
+export const CityMap = dynamic(() => import('@/components/wow/CityMap').then((m) => m.CityMap), { ssr: false });

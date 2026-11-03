@@ -6,10 +6,12 @@ import {
   getCategory,
   getCity,
   opportunities,
+  platformStats,
   type Opportunity,
   type OpportunityStage,
 } from '@forsa/data';
 import type { DictKey, Locale } from './i18n';
+import { formatSAR } from '@forsa/tokens';
 
 export const TYPE_ORDER: OpportunityType[] = [
   OpportunityType.ForSale,
@@ -147,19 +149,36 @@ const TYPE_DESC: Record<OpportunityType, { ar: string; en: string }> = {
   [OpportunityType.InvestorForIdea]: { ar: 'أفكار ومشاريع ناشئة تحتاج مستثمرًا يؤمن بها.', en: 'Ideas and early ventures that need a believing investor.' },
 };
 
-export function typeCounts() {
-  return TYPE_ORDER.map((t) => ({
-    descriptionAr: TYPE_DESC[t].ar,
-    descriptionEn: TYPE_DESC[t].en,
-    id: t,
-    slug: typeSlug(t),
-    nameAr: typeLabel(t, 'ar', false),
-    nameEn: typeLabel(t, 'en', false),
-    shortAr: typeLabel(t, 'ar'),
-    shortEn: typeLabel(t, 'en'),
-    count: opportunities.filter((o) => o.type === t).length,
-    example: opportunities.filter((o) => o.type === t).sort((a, b) => Number(b.featured) - Number(a.featured) || b.views - a.views)[0],
-  }));
+/**
+ * Platform totals per type from the August 2026 report (platformStats). The report publishes only
+ * for-sale (389) and investment (285); partner and investor-for-idea have no published figure, so
+ * no count is shown for them rather than a demo number (QA P1-5).
+ */
+const PLATFORM_TYPE_TOTALS: Partial<Record<OpportunityType, number>> = {
+  [OpportunityType.ForSale]: platformStats.forSaleOpportunities,
+  [OpportunityType.Investment]: platformStats.investmentOpportunities,
+};
+
+export function typeCounts(locale: Locale = 'ar') {
+  return TYPE_ORDER.map((t) => {
+    const ex = opportunities.filter((o) => o.type === t).sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.verified) - Number(a.verified) || b.views - a.views)[0];
+    return {
+      id: t as number,
+      nameAr: typeLabel(t, 'ar', false),
+      nameEn: typeLabel(t, 'en', false),
+      count: PLATFORM_TYPE_TOTALS[t],
+      descriptionAr: TYPE_DESC[t].ar,
+      descriptionEn: TYPE_DESC[t].en,
+      href: `/opportunities/?type=${typeSlug(t)}`,
+      example: ex
+        ? {
+            title: ex.title,
+            meta: `${cityName(ex.cityId, locale)} · ${formatSAR(ex.priceSar, locale)}`,
+            href: `/opportunities/${ex.id}/`,
+          }
+        : undefined,
+    };
+  });
 }
 
 export { categories, cities };

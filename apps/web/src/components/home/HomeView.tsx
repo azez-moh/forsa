@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { ArrowLeft, BadgeCheck, FileLock2, Percent, PlayCircle, Search } from 'lucide-react';
-import { featuredOpportunities, platformStats, services, videos, getProvider } from '@forsa/data';
+import { featuredOpportunities, opportunities, platformStats, services, videos, getProvider } from '@forsa/data';
 import { useApp } from '@/lib/store';
 import { cityStats, typeCounts } from '@/lib/opportunity';
 import { publicConsultants } from '@/lib/services';
@@ -16,6 +16,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { SectionHeader } from '@/components/layout/PageHeader';
 import { ConsultantAvatar, ReputationLabel } from '@/components/ui/Reputation';
 import { CityMap, HeroCounter, TiltCard, TypeStory } from './wow';
+import { Deferred } from './Deferred';
 import type { DictKey } from '@/lib/i18n';
 
 /** S01 Home (US-DISC-01): one cinematic moment (hero), everything else quiet. */
@@ -24,8 +25,9 @@ export function HomeView() {
   const router = useRouter();
   const [q, setQ] = useState('');
   const [how, setHow] = useState<'buyer' | 'seller' | 'idea'>('buyer');
-  const featured = featuredOpportunities().slice(0, 6);
-  const types = typeCounts();
+  // Always 6 cards (2 or 3 per row, never an orphan gap): featured first, then most-viewed verified.
+  const featured = [...featuredOpportunities(), ...opportunities.filter((o) => !o.featured && o.verified).sort((a, b) => b.views - a.views)].slice(0, 6);
+  const types = typeCounts(locale);
   const cities = cityStats();
   const Arrow = <ArrowLeft size={17} aria-hidden className="ltr:rotate-180" />;
 
@@ -70,20 +72,19 @@ export function HomeView() {
       </HeroCounter>
 
       {/* 2 · Four types story (Wow agent) — full-bleed navy chapter that continues the hero */}
-      <TypeStory types={types} locale={locale} />
+      <Deferred minHeight="100svh" style={{ background: 'var(--fz-navy-deep)' }}>
+        <TypeStory types={types} locale={locale} />
+      </Deferred>
 
-      {/* 3 · Proof band (figures the hero does not already show) */}
+      {/* 3 · Proof band: figures the hero and the type story do not already show */}
       <section aria-labelledby="stats-h" className="border-b border-separator/40">
-        <div className="container-page pt-16 md:pt-24">
-          <h2 id="stats-h" className="t-display-m max-w-2xl">
-            {t('typesTitle')}
-          </h2>
-          <p className="mt-3 max-w-2xl text-[17px] text-label-2 md:text-[19px]">{t('typesLead')}</p>
-        </div>
+        <h2 id="stats-h" className="sr-only">
+          {t('statsValue')}
+        </h2>
         <div className="container-page grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16">
-          <StatTile value={platformStats.forSaleOpportunities.toLocaleString('en-US')} label={locale === 'ar' ? 'فرصة للبيع' : 'businesses for sale'} />
-          <StatTile value={platformStats.investmentOpportunities.toLocaleString('en-US')} label={locale === 'ar' ? 'فرصة استثمارية' : 'investment opportunities'} />
           <StatTile value={formatCompact(platformStats.totalViews, locale)} label={t('statsViews')} />
+          <StatTile value={platformStats.serviceRequests.toLocaleString('en-US')} label={locale === 'ar' ? 'طلب خدمة' : 'service requests'} />
+          <StatTile value={platformStats.consultants.toLocaleString('en-US')} label={locale === 'ar' ? 'مستشارون معتمدون' : 'certified consultants'} />
           <StatTile value={`${platformStats.commissionPercent}%`} label={locale === 'ar' ? 'عمولة على الصفقات المكتملة فقط' : 'commission on completed deals only'} />
         </div>
         <p className="container-page -mt-6 pb-12 text-[13px] text-label-2">{t('statsAsOf')}</p>
@@ -92,8 +93,8 @@ export function HomeView() {
       {/* 4 · Featured */}
       <section className="section-gap bg-bg-2" aria-labelledby="featured-h">
         <div className="container-page">
-          <div id="featured-h">
-            <SectionHeader
+          <SectionHeader
+              id="featured-h"
               title={t('featuredTitle')}
               lead={t('featuredLead')}
               action={
@@ -102,7 +103,6 @@ export function HomeView() {
                 </ButtonLink>
               }
             />
-          </div>
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((o, i) => (
               <li key={o.id}>
@@ -118,17 +118,17 @@ export function HomeView() {
       {/* 5 · City map (Wow agent) */}
       <section className="section-gap" aria-labelledby="map-h">
         <div className="container-page">
-          <div id="map-h">
-            <SectionHeader title={t('mapTitle')} lead={t('mapLead')} />
-          </div>
-          <CityMap
-            cities={cities.map(({ nameAr, nameEn, count, value }) => ({ nameAr, nameEn, count, value }))}
-            onSelect={(c) => {
-              const hit = cities.find((x) => x.nameEn === c.nameEn);
-              if (hit) router.push(`/opportunities/?city=${hit.id}`);
-            }}
-            locale={locale}
-          />
+          <SectionHeader id="map-h" title={t('mapTitle')} lead={t('mapLead')} />
+          <Deferred minHeight="560px">
+            <CityMap
+              cities={cities.map(({ nameAr, nameEn, count, value }) => ({ nameAr, nameEn, count, value }))}
+              onSelect={(c) => {
+                const hit = cities.find((x) => x.nameEn === c.nameEn);
+                if (hit) router.push(`/opportunities/?city=${hit.id}`);
+              }}
+              locale={locale}
+            />
+          </Deferred>
         </div>
       </section>
 
@@ -175,7 +175,7 @@ export function HomeView() {
               ] as const
             ).map(([Icon, h, b]) => (
               <div key={h}>
-                <Icon size={28} strokeWidth={1.5} aria-hidden className="text-primary" />
+                <Icon size={28} strokeWidth={1.5} aria-hidden className="text-primary-text" />
                 <h3 className="t-title3 mt-4">{t(h)}</h3>
                 <p className="mt-2 text-[17px] leading-relaxed text-label-2">{t(b)}</p>
               </div>
@@ -187,8 +187,8 @@ export function HomeView() {
       {/* 8 · Services */}
       <section className="section-gap bg-bg-2" aria-labelledby="services-h">
         <div className="container-page">
-          <div id="services-h">
-            <SectionHeader
+          <SectionHeader
+              id="services-h"
               title={t('servicesTitle')}
               lead={t('servicesLead')}
               action={
@@ -197,7 +197,6 @@ export function HomeView() {
                 </ButtonLink>
               }
             />
-          </div>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {services
               .filter((s) => [2, 6, 9, 5].includes(s.id))
@@ -220,8 +219,8 @@ export function HomeView() {
       {/* 9 · Consultants */}
       <section className="section-gap" aria-labelledby="consult-h">
         <div className="container-page">
-          <div id="consult-h">
-            <SectionHeader
+          <SectionHeader
+              id="consult-h"
               title={t('consultantsTitle')}
               lead={t('consultantsLead')}
               action={
@@ -230,7 +229,6 @@ export function HomeView() {
                 </ButtonLink>
               }
             />
-          </div>
           <ul className="no-scrollbar -mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-5">
             {publicConsultants().map((c) => (
               <li key={c.id} className="w-60 shrink-0 snap-start md:w-auto">
@@ -249,8 +247,8 @@ export function HomeView() {
       {/* 10 · Culture center */}
       <section className="section-gap bg-bg-2" aria-labelledby="culture-h">
         <div className="container-page">
-          <div id="culture-h">
-            <SectionHeader
+          <SectionHeader
+              id="culture-h"
               title={t('cultureTitle')}
               lead={t('cultureLead')}
               action={
@@ -259,7 +257,6 @@ export function HomeView() {
                 </ButtonLink>
               }
             />
-          </div>
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {videos.slice(0, 4).map((v) => (
               <li key={v.id}>
