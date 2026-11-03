@@ -56,6 +56,7 @@ export interface MyListing {
   profitMargin?: number;
   branches?: number;
   employees?: number;
+  paybackMonths?: number;
   ndaRequired: boolean;
   negotiable: boolean;
   photos: number;

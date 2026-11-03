@@ -121,7 +121,7 @@ export function CultureView() {
                 <span className="block text-[13px] text-label-2">{t('navServices')}</span>
                 <span className="t-headline">{svc.title}</span>
               </span>
-              <span className="tabular font-bold text-primary">
+              <span className="tabular font-bold text-primary-text">
                 {t('startsFrom')} <bdi>{formatSAR(svc.priceSar, locale)}</bdi>
               </span>
             </Link>

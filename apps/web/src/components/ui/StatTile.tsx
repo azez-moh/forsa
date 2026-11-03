@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn';
 export function StatTile({ value, label, icon, className, onDark = false, size = 'md' }: { value: ReactNode; label: string; icon?: ReactNode; className?: string; onDark?: boolean; size?: 'md' | 'lg' }) {
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      {icon && <span className={cn('mb-2', onDark ? 'text-white/70' : 'text-primary')}>{icon}</span>}
+      {icon && <span className={cn('mb-2', onDark ? 'text-white/70' : 'text-primary-text')}>{icon}</span>}
       <span className={cn('tabular font-extrabold leading-tight', size === 'lg' ? 'text-[34px] md:text-[44px]' : 'text-[28px]', onDark ? 'text-white' : 'text-label')}>
         <bdi>{value}</bdi>
       </span>

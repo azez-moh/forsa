@@ -16,6 +16,7 @@ import {
   compactSarText,
   formatInt,
   useFinePointer,
+  useMediaQuery,
   usePrefersReducedMotion,
   type WowLocale,
 } from './shared';
@@ -57,7 +58,11 @@ const HERO_CSS = `
 .fz-aurora-c { animation: fz-aurora-c 34s ease-in-out infinite; }
 .fz-grain { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 160px 160px; }
 @media (prefers-reduced-motion: reduce) { .fz-aurora-a, .fz-aurora-b, .fz-aurora-c { animation: none; } }
-@media (max-width: 767px) { .fz-aurora { filter: blur(56px); } }
+@media (max-width: 767px) {
+  /* Mobile performance (QA P2-9): one static aurora layer, no infinite blur animations. */
+  .fz-aurora { filter: blur(48px); animation: none !important; }
+  .fz-aurora-b, .fz-aurora-c { display: none; }
+}
 `;
 
 /* ------------------------------------------------------------------ */
@@ -96,21 +101,25 @@ function OdometerDigit({ digit, index, total, animateIn }: { digit: number; inde
 }
 
 function Odometer({ text, reduce }: { text: string; reduce: boolean }) {
+  const wide = useMediaQuery('(min-width: 768px)');
   const [go, setGo] = useState(false);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    // Start after hydration so the server HTML (zeros) and the first client render match.
+    setMounted(true);
+    // Start after hydration so the server HTML and the first client render match.
     const id = requestAnimationFrame(() => setGo(true));
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const chars = text.split('');
-  const digitCount = chars.filter((c) => /\d/.test(c)).length;
-  let di = -1;
-
-  if (reduce) {
+  // Static HTML, reduced motion and phones: the final value as plain text. The ~90-span odometer reel
+  // is only built on wide screens after hydration (QA P2-9: mobile TBT; QA P0-1: value always visible).
+  if (reduce || !mounted || !wide) {
     return <span style={{ fontVariantNumeric: 'tabular-nums' }}>{text}</span>;
   }
 
+  const chars = text.split('');
+  const digitCount = chars.filter((c) => /\d/.test(c)).length;
+  let di = -1;
   return (
     <span aria-hidden className="inline-flex items-start" style={{ fontVariantNumeric: 'tabular-nums' }}>
       {chars.map((c, i) => {
@@ -200,14 +209,16 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
   const value = compactSar(totalValueSar, loc);
   const fullValueText = compactSarText(totalValueSar, loc);
 
-  const enter = (delay: number) =>
-    reduce
-      ? { initial: false as const }
-      : {
-          initial: { opacity: 0, y: 18 },
-          animate: { opacity: 1, y: 0 },
-          transition: { duration: 0.9, delay, ease: EASE_OUT },
-        };
+  /**
+   * Entrance props. Under reduced motion the elements still animate to their final state, with duration 0:
+   * the static HTML is rendered with the hidden initial state (the server cannot know the preference), so
+   * returning `initial: false` without `animate` would leave them at opacity 0 (QA P0-1).
+   */
+  const enter = (delay: number, fade = true) => ({
+    initial: fade ? { opacity: 0, y: 18 } : { y: 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: reduce ? { duration: 0 } : { duration: 0.9, delay, ease: EASE_OUT },
+  });
 
   return (
     <section
@@ -289,7 +300,7 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
         style={{ y: contentY, opacity: contentOpacity, scale: contentScale }}
       >
         <motion.h1
-          {...enter(0.05)}
+          {...enter(0.05, false)}
           className="text-balance font-extrabold leading-[1.15] text-white"
           style={{ fontSize: 'clamp(2.5rem, 7vw, 5.25rem)', letterSpacing: locale === 'en' ? '-0.025em' : 0 }}
         >

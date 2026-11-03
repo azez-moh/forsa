@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { BadgeCheck, Bookmark, CalendarDays, Eye, FileText, Lock, MapPin, MessageSquare, Share2, ShieldAlert, Unlock } from 'lucide-react';
 import { getUser, type Opportunity } from './owner';
-import { useApp } from '@/lib/store';
+import { DEMO_OWNED_OPPORTUNITIES, useApp } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { categoryName, cityName, opportunityMetrics, priceLabelKey, similarOpportunities, STAGE_KEY, TYPE_COLOR_VAR, typeLabel, typeSlug } from '@/lib/opportunity';
 import { arabicPriceWords } from '@/lib/arabicWords';
 import { formatDate, formatSAR } from '@/lib/format';
@@ -25,6 +26,7 @@ import type { DictKey } from '@/lib/i18n';
  */
 export function DetailView({ o }: { o: Opportunity }) {
   const { t, locale, requireAuth, isSaved, toggleSaved, showToast, myInquiryFor, ownsOpportunity } = useApp();
+  const router = useRouter();
   const [inq, setInq] = useState(false);
   const [img, setImg] = useState(0);
   const saved = isSaved(o.id);
@@ -37,7 +39,17 @@ export function DetailView({ o }: { o: Opportunity }) {
   const approved = mine && (mine.status === 'in-discussion' || mine.status === 'meeting' || mine.status === 'closed-won');
   const type = typeLabel(o.type, locale);
 
-  const startInquiry = () => requireAuth(() => setInq(true));
+  // QA P1-3 / US-INQ-01: ownership is re-checked after sign-in (the callback runs once the user exists),
+  // so the owner of a listing is sent to "إدارة الفرصة" instead of an inquiry on their own listing.
+  const startInquiry = () =>
+    requireAuth(() => {
+      if (DEMO_OWNED_OPPORTUNITIES.includes(o.id)) {
+        showToast(t('ownListingNote'));
+        router.push('/dashboard/?tab=listings');
+        return;
+      }
+      setInq(true);
+    });
   const share = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : '';
     const text = `${o.title} · ${formatSAR(o.priceSar, locale)}`;
@@ -150,7 +162,7 @@ export function DetailView({ o }: { o: Opportunity }) {
             <div className="mt-5 flex flex-wrap gap-2">
               <Button
                 variant="gray"
-                icon={<Bookmark size={17} aria-hidden className={saved ? 'fill-primary text-primary' : ''} />}
+                icon={<Bookmark size={17} aria-hidden className={saved ? 'fill-primary text-primary-text' : ''} />}
                 aria-pressed={saved}
                 onClick={() => {
                   toggleSaved(o.id);
@@ -232,7 +244,7 @@ export function DetailView({ o }: { o: Opportunity }) {
             <ul className="divide-y divide-separator/40 overflow-hidden rounded-xl ring-1 ring-separator/40">
               {docs.map((d) => (
                 <li key={d} className="flex min-h-16 items-center gap-4 px-5">
-                  <FileText size={20} aria-hidden className={approved ? 'text-primary' : 'text-label-3'} />
+                  <FileText size={20} aria-hidden className={approved ? 'text-primary-text' : 'text-label-3'} />
                   <span className={`flex-1 text-[15px] ${approved ? 'text-label' : 'text-label-2'}`}>
                     {approved ? t(d) : <span className="select-none blur-[3px]" aria-hidden>{t(d)}</span>}
                     {!approved && <span className="sr-only">{t('documentsLocked')}</span>}
@@ -263,7 +275,7 @@ export function DetailView({ o }: { o: Opportunity }) {
 
           <p className="mt-10 text-[13px] text-label-2">
             {t('source')}:{' '}
-            <a href={o.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline-offset-2 hover:underline">
+            <a href={o.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-primary-text underline-offset-2 hover:underline">
               forsh.sa/opportunities/{o.id}
             </a>
           </p>
@@ -373,7 +385,7 @@ function OwnerBlock({ verified, name, joinedAt }: { verified: boolean; name?: st
           {t('memberSince')} <bdi className="tabular">{new Date(joinedAt).getUTCFullYear()}</bdi>
         </p>
       )}
-      <Link href="/faq/" className="mt-3 inline-flex min-h-11 items-center text-[13px] text-primary">
+      <Link href="/faq/" className="mt-3 inline-flex min-h-11 items-center text-[13px] text-primary-text">
         {t('faqTrust')}
       </Link>
     </section>

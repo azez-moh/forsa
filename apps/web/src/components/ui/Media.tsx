@@ -80,7 +80,7 @@ export function Media({
           aria-label={alt}
           className="grid size-full place-items-center bg-[radial-gradient(120%_90%_at_80%_0%,var(--color-primary-tint),transparent_60%),linear-gradient(180deg,var(--color-bg-2),var(--color-bg-2))]"
         >
-          <Icon aria-hidden strokeWidth={1.25} className="size-14 text-primary/50" />
+          <Icon aria-hidden strokeWidth={1.25} className="size-14 text-primary-text/50" />
         </div>
       )}
     </div>

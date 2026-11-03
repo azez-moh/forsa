@@ -5,7 +5,7 @@ type Tone = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'onDark';
 
 const tones: Record<Tone, string> = {
   neutral: 'bg-fill-3 text-label-2',
-  primary: 'bg-primary-tint text-primary',
+  primary: 'bg-primary-tint text-primary-text',
   success: 'bg-[color-mix(in_srgb,var(--color-success)_14%,transparent)] text-[color-mix(in_srgb,var(--color-success)_70%,var(--color-label))]',
   warning: 'bg-[color-mix(in_srgb,var(--color-warning)_16%,transparent)] text-[color-mix(in_srgb,var(--color-warning)_60%,var(--color-label))]',
   danger: 'bg-[color-mix(in_srgb,var(--color-danger)_12%,transparent)] text-danger',

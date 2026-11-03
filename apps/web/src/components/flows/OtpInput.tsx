@@ -54,7 +54,7 @@ export function OtpInput({ value, onChange, label, digitLabel, error, autoFocus 
               if (v && i < 3) refs.current[i + 1]?.focus();
             }}
             className={cn(
-              'size-14 rounded-md bg-fill-3 text-center text-[24px] font-bold tabular text-label outline-none transition-shadow focus:bg-bg focus:shadow-[0_0_0_2px_var(--color-primary)]',
+              'size-14 rounded-md bg-fill-3 text-center text-[24px] font-bold tabular text-label outline-0 transition-shadow focus:bg-bg focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-focus focus:outline-[3px] focus:outline-offset-2 focus:outline-focus',
               error && 'shadow-[0_0_0_2px_var(--color-danger)]',
             )}
           />

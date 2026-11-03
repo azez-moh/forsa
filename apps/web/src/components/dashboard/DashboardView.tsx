@@ -253,7 +253,7 @@ function ListingsTab({ listings }: { listings: MyListing[] }) {
                 <ListingStatus status="live" />
                 <span className="text-[13px] text-label-2">{typeLabel(o.type, locale)}</span>
               </div>
-              <Link href={`/opportunities/${o.id}/`} className="t-headline mt-2 block hover:text-primary">
+              <Link href={`/opportunities/${o.id}/`} className="t-headline mt-2 block hover:text-primary-text">
                 {o.title}
               </Link>
               <p className="text-[13px] text-label-2">
@@ -345,14 +345,14 @@ function PipelineCard({ p }: { p: PipelineInquiry }) {
         {p.direction === 'received' ? (
           <p className="text-[15px] font-bold">{p.counterpart}</p>
         ) : (
-          <Link href={`/opportunities/${o.id}/`} className="line-clamp-2 text-[15px] font-bold hover:text-primary">
+          <Link href={`/opportunities/${o.id}/`} className="line-clamp-2 text-[15px] font-bold hover:text-primary-text">
             {o.title}
           </Link>
         )}
         <Badge tone={p.status === 'closed-won' ? 'success' : p.status === 'closed-lost' ? 'neutral' : 'primary'}>{STATUS_KEY[p.status][locale]}</Badge>
       </div>
       {p.direction === 'received' && (
-        <Link href={`/opportunities/${o.id}/`} className="mt-1 line-clamp-1 text-[13px] text-label-2 hover:text-primary">
+        <Link href={`/opportunities/${o.id}/`} className="mt-1 line-clamp-1 text-[13px] text-label-2 hover:text-primary-text">
           {o.title}
         </Link>
       )}

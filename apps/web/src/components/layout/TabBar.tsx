@@ -32,7 +32,7 @@ export function TabBar() {
               <Link
                 href={it.href}
                 aria-current={active ? 'page' : undefined}
-                className={cn('relative mx-auto flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium', active ? 'text-primary' : 'text-label-2')}
+                className={cn('relative mx-auto flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-medium', active ? 'text-primary-text' : 'text-label-2')}
               >
                 {it.primary ? (
                   <span className="grid size-10 place-items-center rounded-full bg-primary text-on-primary">

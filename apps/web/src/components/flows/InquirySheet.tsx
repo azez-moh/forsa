@@ -190,7 +190,7 @@ export function InquirySheet({ o, open, onClose }: { o: Opportunity; open: boole
               initial={reduce ? { opacity: 0 } : { scale: 0.6, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={reduce ? { duration: 0.15 } : { type: 'spring', stiffness: 158, damping: 17.6 }}
-              className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary"
+              className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary-text"
             >
               <CheckCircle2 size={40} strokeWidth={1.75} aria-hidden />
             </motion.span>

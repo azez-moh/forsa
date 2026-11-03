@@ -130,7 +130,7 @@ export function AuthFlow({ onDone, compact = false }: { onDone: (u: Omit<Session
           <Button size="lg" full onClick={verify} disabled={code.length < 4}>
             {t('confirm')}
           </Button>
-          <button type="button" disabled={timer > 0} onClick={() => setTimer(60)} className="min-h-11 text-[15px] text-primary disabled:text-label-3">
+          <button type="button" disabled={timer > 0} onClick={() => setTimer(60)} className="min-h-11 text-[15px] text-primary-text disabled:text-label-3">
             {timer > 0 ? (
               <>
                 {t('resendIn')} <bdi className="tabular">{timer}</bdi>
@@ -147,7 +147,7 @@ export function AuthFlow({ onDone, compact = false }: { onDone: (u: Omit<Session
         <div className="flex flex-col items-center gap-4 py-4 text-center" aria-live="polite">
           <DemoTag label={t('demoTag')} />
           <p className="text-[15px] text-label-2">{t('nafathBody')}</p>
-          <div className="grid size-24 place-items-center rounded-xl bg-primary-tint text-[44px] font-extrabold tabular text-primary">47</div>
+          <div className="grid size-24 place-items-center rounded-xl bg-primary-tint text-[44px] font-extrabold tabular text-primary-text">47</div>
           <p className="flex items-center gap-2 text-[15px] text-label-2">
             <span className="inline-block size-4 animate-spin rounded-full border-2 border-primary border-e-transparent motion-reduce:animate-none" aria-hidden />
             {t('nafathWaiting')}

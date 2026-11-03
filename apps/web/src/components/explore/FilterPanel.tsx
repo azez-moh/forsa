@@ -112,7 +112,7 @@ export function FilterPanel({ value, onChange }: { value: Filters; onChange: (f:
       <fieldset>
         <legend className="t-headline mb-3">
           {t('equityMin')}{' '}
-          <bdi className="tabular text-primary">{value.equityMin === null ? t('any') : `${value.equityMin}%`}</bdi>
+          <bdi className="tabular text-primary-text">{value.equityMin === null ? t('any') : `${value.equityMin}%`}</bdi>
         </legend>
         <input
           type="range"

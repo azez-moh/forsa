@@ -127,7 +127,7 @@ export function FaqView() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t('faqSearch')}
-            className="h-14 w-full rounded-lg bg-fill-3 ps-12 pe-4 text-[17px] outline-none focus:bg-bg focus:shadow-[0_0_0_2px_var(--color-primary)]"
+            className="h-14 w-full rounded-lg bg-fill-3 ps-12 pe-4 text-[17px] outline-0 focus:bg-bg focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-focus focus:outline-[3px] focus:outline-offset-2 focus:outline-focus"
           />
         </div>
         {filtered.length === 0 ? (
@@ -238,14 +238,14 @@ export function ContactView() {
         )}
         <aside className="flex flex-col gap-3">
           <a href={`mailto:${platformContact.email}`} className="flex min-h-16 items-center gap-4 rounded-lg bg-bg-2 px-5 hover:bg-fill-3">
-            <Mail size={20} aria-hidden className="text-primary" />
+            <Mail size={20} aria-hidden className="text-primary-text" />
             <span>
               <span className="block text-[13px] text-label-2">{t('email')}</span>
               <bdi className="font-bold">{platformContact.email}</bdi>
             </span>
           </a>
           <a href={platformContact.whatsapp} target="_blank" rel="noopener noreferrer" className="flex min-h-16 items-center gap-4 rounded-lg bg-bg-2 px-5 hover:bg-fill-3">
-            <MessageCircle size={20} aria-hidden className="text-primary" />
+            <MessageCircle size={20} aria-hidden className="text-primary-text" />
             <span>
               <span className="block text-[13px] text-label-2">{t('whatsapp')}</span>
               <bdi dir="ltr" className="font-bold tabular">
@@ -254,13 +254,13 @@ export function ContactView() {
             </span>
           </a>
           <div className="flex min-h-16 items-center gap-4 rounded-lg bg-bg-2 px-5 py-3">
-            <MapPin size={20} aria-hidden className="text-primary" />
+            <MapPin size={20} aria-hidden className="text-primary-text" />
             <span>
               <span className="block text-[13px] text-label-2">{t('address')}</span>
               <span className="font-bold">{platformContact.address}</span>
             </span>
           </div>
-          <Link href="/faq/" className="mt-2 inline-flex min-h-11 items-center text-[15px] font-bold text-primary">
+          <Link href="/faq/" className="mt-2 inline-flex min-h-11 items-center text-[15px] font-bold text-primary-text">
             {t('navFaq')}
           </Link>
         </aside>

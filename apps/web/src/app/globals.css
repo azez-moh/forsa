@@ -10,6 +10,8 @@
 @theme static {
   --color-primary: var(--fz-color-primary);
   --color-primary-tint: var(--fz-color-primary-tint);
+  /* Text-safe primary for labels and links on light surfaces (AA ≥ 5.6:1 on #F5F7FB); fills keep the brand #0275D9. */
+  --color-primary-text: var(--fz-color-accent-text);
   --color-on-primary: var(--fz-color-on-primary);
   --color-accent: var(--fz-color-accent);
   --color-accent-text: var(--fz-color-accent-text);

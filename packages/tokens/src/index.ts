@@ -42,8 +42,9 @@ export const colors = {
     fillTertiary: 'rgba(118,118,128,0.12)',
 
     labelPrimary: '#111111',
-    labelSecondary: 'rgba(60,60,67,0.60)',
-    labelTertiary: 'rgba(60,60,67,0.30)',
+    // Opaque navy-biased greys that pass WCAG AA 4.5:1 on bgPrimary and bgSecondary (QA P1-2).
+    labelSecondary: '#5E6272', // 6.06:1 on #FFFFFF, 5.65:1 on #F5F7FB
+    labelTertiary: '#6B6E79', // 5.08:1 on #FFFFFF, 4.74:1 on #F5F7FB
     labelQuaternary: 'rgba(60,60,67,0.18)',
 
     separator: 'rgba(60,60,67,0.29)',
@@ -75,8 +76,8 @@ export const colors = {
     fillTertiary: 'rgba(118,118,128,0.24)',
 
     labelPrimary: '#FFFFFF',
-    labelSecondary: 'rgba(235,235,245,0.60)',
-    labelTertiary: 'rgba(235,235,245,0.30)',
+    labelSecondary: '#AEB0BA', // ≥ 6:1 on #000000, #1C1C1E and #2C2C2E
+    labelTertiary: '#9A9CA6', // ≥ 4.9:1 on #000000, #1C1C1E and #2C2C2E
     labelQuaternary: 'rgba(235,235,245,0.16)',
 
     separator: 'rgba(84,84,88,0.65)',

@@ -160,7 +160,7 @@ export function ExploreView() {
             value={qInput}
             onChange={(e) => setQInput(e.target.value)}
             placeholder={t('heroSearch')}
-            className="h-14 w-full rounded-lg bg-fill-3 ps-12 pe-12 text-[17px] outline-none transition-shadow focus:bg-bg focus:shadow-[0_0_0_2px_var(--color-primary)]"
+            className="h-14 w-full rounded-lg bg-fill-3 ps-12 pe-12 text-[17px] outline-0 transition-shadow focus:bg-bg focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-focus focus:outline-[3px] focus:outline-offset-2 focus:outline-focus"
           />
           {qInput && (
             <button type="button" onClick={() => setQInput('')} aria-label={t('clearAll')} className="absolute end-2 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full text-label-2 hover:text-label">

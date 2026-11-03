@@ -6,8 +6,8 @@ import { cn } from '@/lib/cn';
 
 /** Inputs: 48px on web, radius 12, fill.tertiary, no border until focus (design system §10). */
 const fieldBase =
-  'w-full rounded-md bg-fill-3 px-4 text-[17px] text-label placeholder:text-label-3 outline-none ' +
-  'ring-0 transition-shadow duration-200 focus:bg-bg focus:shadow-[0_0_0_2px_var(--color-primary)] ' +
+  'w-full rounded-md bg-fill-3 px-4 text-[17px] text-label placeholder:text-label-3 outline-0 ' +
+  'ring-0 transition-shadow duration-200 focus:bg-bg focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-focus focus:outline-[3px] focus:outline-offset-2 focus:outline-focus ' +
   'aria-[invalid=true]:shadow-[0_0_0_2px_var(--color-danger)]';
 
 interface FieldShellProps {

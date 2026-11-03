@@ -62,7 +62,7 @@ export function ArticleView({ a }: { a: Article }) {
             <ol className="list-decimal space-y-2 ps-5 text-[16px] leading-relaxed text-label-2 marker:tabular">
               {a.headings.map((h, i) => (
                 <li key={h}>
-                  <a href={`#${slugify(h, i)}`} className="hover:text-primary">
+                  <a href={`#${slugify(h, i)}`} className="hover:text-primary-text">
                     {h}
                   </a>
                 </li>
@@ -79,7 +79,7 @@ export function ArticleView({ a }: { a: Article }) {
         </div>
         {a.sourceUrl && (
           <p className="mt-10">
-            <a href={a.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-[15px] font-bold text-primary hover:underline">
+            <a href={a.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-[15px] font-bold text-primary-text hover:underline">
               {t('readOriginal')}
             </a>
           </p>

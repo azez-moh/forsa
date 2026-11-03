@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Languages, Menu, Moon, Plus, Sun, UserRound } from 'lucide-react';
 import { useApp } from '@/lib/store';
+import { useMediaQuery } from '@/lib/useMediaQuery';
 import { cn } from '@/lib/cn';
 import { ButtonLink, IconButton } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
@@ -41,7 +42,9 @@ export function GlassNav() {
   useEffect(() => setMenu(false), [pathname]);
 
   const transparent = overHero && !scrolled;
-  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  // Hydration-safe (QA P1-1): the OS preference is read through useSyncExternalStore with a server snapshot of false.
+  const systemDark = useMediaQuery('(prefers-color-scheme: dark)');
+  const isDark = theme === 'dark' || (theme === 'system' && systemDark);
 
   const linkCls = (href: string) =>
     cn(
@@ -141,7 +144,7 @@ export function GlassNav() {
           <ButtonLink href={user ? '/dashboard/' : '/login/'} variant="gray" size="lg" full>
             {user ? t('navDashboard') : t('navLogin')}
           </ButtonLink>
-          <button type="button" onClick={() => setTheme(isDark ? 'light' : 'dark')} className="min-h-11 text-[15px] text-primary">
+          <button type="button" onClick={() => setTheme(isDark ? 'light' : 'dark')} className="min-h-11 text-[15px] text-primary-text">
             {t('themeToggle')}
           </button>
         </div>

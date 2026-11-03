@@ -34,9 +34,9 @@ const sizes: Record<ButtonSize, string> = {
 
 const variants: Record<ButtonVariant, string> = {
   filled: 'bg-primary text-on-primary hover:brightness-[0.94]',
-  tinted: 'bg-primary-tint text-primary hover:bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)]',
+  tinted: 'bg-primary-tint text-primary-text hover:bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)]',
   gray: 'bg-fill-3 text-label hover:bg-fill-2',
-  plain: 'bg-transparent text-primary hover:opacity-80',
+  plain: 'bg-transparent text-primary-text hover:opacity-80',
   destructive: 'bg-danger text-white hover:brightness-[0.94]',
 };
 
@@ -136,7 +136,8 @@ export const IconButton = forwardRef<HTMLButtonElement, ButtonHTMLAttributes<HTM
         className={cn(
           base,
           variants[variant],
-          size === 'lg' ? 'size-11 rounded-full' : 'size-[34px] rounded-full',
+          // md is 34px visual; the ::before hit-slop extends it to 44×44 (QA P2-1).
+          size === 'lg' ? 'size-11 rounded-full before:inset-y-0' : 'size-[34px] min-w-[34px] rounded-full before:-inset-[5px]',
           className,
         )}
         {...rest}

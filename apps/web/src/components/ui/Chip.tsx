@@ -33,7 +33,7 @@ export function Chip({
 /** Active filter chip with a remove button. */
 export function RemovableChip({ children, onRemove, removeLabel }: { children: ReactNode; onRemove: () => void; removeLabel: string }) {
   return (
-    <span className="inline-flex h-8 items-center gap-1 rounded-full bg-primary-tint ps-3 pe-1 text-[14px] font-medium text-primary">
+    <span className="inline-flex h-8 items-center gap-1 rounded-full bg-primary-tint ps-3 pe-1 text-[14px] font-medium text-primary-text">
       {children}
       <button
         type="button"
