@@ -197,7 +197,7 @@ export function ExploreView() {
             <select
               value={f.sort}
               onChange={(e) => setF({ ...f, sort: e.target.value as SortKey })}
-              className="h-[34px] min-h-11 appearance-none rounded-[10px] bg-fill-3 ps-9 pe-4 text-[15px] font-bold text-label outline-none focus-visible:outline-[3px] focus-visible:outline-focus md:min-h-0"
+              className="h-11 appearance-none rounded-[12px] bg-fill-3 ps-9 pe-4 text-[15px] font-bold text-label outline-none focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               {SORTS.map(([k, label]) => (
                 <option key={k} value={k}>
@@ -245,9 +245,10 @@ export function ExploreView() {
         </aside>
 
         <section aria-labelledby="results-h">
-          <p id="results-h" aria-live="polite" className="mb-5 text-[15px] text-label-2">
+          {/* h2 so card h3s follow the page h1 (QA N-P2-3) */}
+          <h2 id="results-h" aria-live="polite" className="mb-5 text-[15px] font-normal text-label-2">
             <bdi className="tabular font-bold text-label">{results.length}</bdi> {t('results')}
-          </p>
+          </h2>
 
           {!ready ? (
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
@@ -279,7 +280,7 @@ export function ExploreView() {
               </div>
               <CityMap
                 cities={mapCities.map(({ nameAr, nameEn, count, value }) => ({ nameAr, nameEn, count, value }))}
-                onSelect={(c) => {
+                onNavigate={(c) => {
                   const hit = mapCities.find((x) => x.nameEn === c.nameEn);
                   if (hit) {
                     setF({ ...f, cities: [hit.id] });

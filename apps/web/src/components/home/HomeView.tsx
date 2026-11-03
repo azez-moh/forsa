@@ -72,9 +72,9 @@ export function HomeView() {
       </HeroCounter>
 
       {/* 2 · Four types story (Wow agent) — full-bleed navy chapter that continues the hero */}
-      <Deferred minHeight="100svh" style={{ background: 'var(--fz-navy-deep)' }}>
-        <TypeStory types={types} locale={locale} />
-      </Deferred>
+        <Deferred minHeight="100svh" style={{ background: 'var(--fz-navy-deep)' }}>
+          <TypeStory types={types} locale={locale} />
+        </Deferred>
 
       {/* 3 · Proof band: figures the hero and the type story do not already show */}
       <section aria-labelledby="stats-h" className="border-b border-separator/40">
@@ -91,7 +91,7 @@ export function HomeView() {
       </section>
 
       {/* 4 · Featured */}
-      <section className="section-gap bg-bg-2" aria-labelledby="featured-h">
+      <section className="cv-auto section-gap bg-bg-2" aria-labelledby="featured-h">
         <div className="container-page">
           <SectionHeader
               id="featured-h"
@@ -116,13 +116,14 @@ export function HomeView() {
       </section>
 
       {/* 5 · City map (Wow agent) */}
-      <section className="section-gap" aria-labelledby="map-h">
+      <section className="cv-auto section-gap" aria-labelledby="map-h">
         <div className="container-page">
           <SectionHeader id="map-h" title={t('mapTitle')} lead={t('mapLead')} />
           <Deferred minHeight="560px">
             <CityMap
               cities={cities.map(({ nameAr, nameEn, count, value }) => ({ nameAr, nameEn, count, value }))}
-              onSelect={(c) => {
+              onNavigate={(c) => {
+                // Second tap on the selected city. router.push applies basePath (GitHub Pages /forsa).
                 const hit = cities.find((x) => x.nameEn === c.nameEn);
                 if (hit) router.push(`/opportunities/?city=${hit.id}`);
               }}
@@ -133,7 +134,7 @@ export function HomeView() {
       </section>
 
       {/* 6 · How it works (tabs per persona) */}
-      <section className="section-gap bg-bg-2" aria-labelledby="how-h">
+      <section className="cv-auto section-gap bg-bg-2" aria-labelledby="how-h">
         <div className="container-page">
           <h2 id="how-h" className="t-display-m mb-8">
             {t('howTitle')}
@@ -161,7 +162,7 @@ export function HomeView() {
       </section>
 
       {/* 7 · Trust */}
-      <section className="section-gap" aria-labelledby="trust-h">
+      <section className="cv-auto section-gap" aria-labelledby="trust-h">
         <div className="container-page">
           <h2 id="trust-h" className="t-display-m mb-10 md:mb-14">
             {t('trustTitle')}
@@ -185,7 +186,7 @@ export function HomeView() {
       </section>
 
       {/* 8 · Services */}
-      <section className="section-gap bg-bg-2" aria-labelledby="services-h">
+      <section className="cv-auto section-gap bg-bg-2" aria-labelledby="services-h">
         <div className="container-page">
           <SectionHeader
               id="services-h"
@@ -217,7 +218,7 @@ export function HomeView() {
       </section>
 
       {/* 9 · Consultants */}
-      <section className="section-gap" aria-labelledby="consult-h">
+      <section className="cv-auto section-gap" aria-labelledby="consult-h">
         <div className="container-page">
           <SectionHeader
               id="consult-h"
