@@ -40,12 +40,14 @@ export function OpportunityCard({ o, compact }: { o: Opportunity; compact?: bool
   const toggleSave = useApp((s) => s.toggleSave);
   const width = compact ? 260 : undefined;
 
+  // Link asChild renders expo-router's Slot, which throws (dev) or drops (release) array styles on
+  // its direct child, so the card style is flattened.
   return (
     <Link href={{ pathname: '/opportunity/[id]', params: { id: String(o.id) } }} asChild>
       <ScalePressable
         accessibilityRole="button"
         accessibilityLabel={`${o.title}، ${typeShort(o.type, lang)}، ${sar(o.priceSar, lang)}، ${cityName(o.cityId, lang)}`}
-        style={[styles.card, { backgroundColor: c.card, width }]}
+        style={StyleSheet.flatten([styles.card, { backgroundColor: c.card, width }])}
       >
         <Link.AppleZoom>
           <View>

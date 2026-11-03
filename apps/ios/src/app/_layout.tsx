@@ -25,6 +25,13 @@ export default function RootLayout() {
   const lang = useApp((s) => s.lang);
   const t = (k: Parameters<typeof translate>[1]) => translate(lang, k);
 
+  // Safety net: whatever happens with the direction reload, never leave the user on the splash.
+  // After 2.5s the app shows in whatever direction it is currently in.
+  useEffect(() => {
+    const id = setTimeout(() => SplashScreen.hideAsync().catch(() => {}), 2500);
+    return () => clearTimeout(id);
+  }, []);
+
   useEffect(() => {
     if (!hydrated) return;
     const wantRTL = lang === 'ar';
@@ -32,12 +39,12 @@ export default function RootLayout() {
     if (I18nManager.isRTL !== wantRTL && rtlBootReloads < 1) {
       useApp.setState({ rtlBootReloads: rtlBootReloads + 1 });
       // give AsyncStorage a moment to persist the guard, then reload into the right direction
-      setTimeout(() => {
+      const id = setTimeout(() => {
         applyDirection(wantRTL).then((ok) => {
           if (!ok) SplashScreen.hideAsync().catch(() => {});
         });
       }, 250);
-      return;
+      return () => clearTimeout(id);
     }
     if (I18nManager.isRTL === wantRTL && rtlBootReloads !== 0) useApp.setState({ rtlBootReloads: 0 });
     SplashScreen.hideAsync().catch(() => {});

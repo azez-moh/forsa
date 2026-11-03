@@ -21,11 +21,6 @@
       "ar": "./locales/ar.json",
       "en": "./locales/en.json"
     },
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#17234F"
-    },
     "plugins": [
       "expo-router",
       [
