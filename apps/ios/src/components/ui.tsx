@@ -5,7 +5,9 @@ import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 
 import { useT } from '@/i18n';
 import { announce } from '@/lib/a11y';
-import { MARGIN, useTheme } from '@/theme';
+import { MARGIN, typeStyle, useTheme } from '@/theme';
+
+const CHIP_HEIGHT = 34;
 
 import { Button } from './Button';
 import { Icon } from './Icon';
@@ -179,6 +181,9 @@ export function Divider() {
 
 export function Chip({ label, selected, onPress }: { label: string; selected?: boolean; onPress: () => void }) {
   const { c } = useTheme();
+  const { lang } = useT();
+  // 34pt at default text size (padding derived from the subhead line height), grows with Dynamic Type.
+  const padV = Math.max(0, (CHIP_HEIGHT - (typeStyle('subhead', lang).lineHeight ?? 20)) / 2);
   return (
     <ScalePressable
       onPress={onPress}
@@ -188,7 +193,7 @@ export function Chip({ label, selected, onPress }: { label: string; selected?: b
       hitSlop={{ top: 6, bottom: 6 }}
       style={[
         styles.chip,
-        { backgroundColor: selected ? c.primary : c.fillTertiary },
+        { paddingVertical: padV, backgroundColor: selected ? c.primary : c.fillTertiary },
       ]}
     >
       <Text variant="subhead" weight={selected ? '600' : '400'} style={{ color: selected ? c.onPrimary : c.labelPrimary }}>
@@ -207,7 +212,7 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: 48, paddingHorizontal: 32, gap: 8 },
   toastWrap: { position: 'absolute', top: 60, left: 0, right: 0, alignItems: 'center', zIndex: 1000 },
   toast: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 999 },
-  chip: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  chip: { paddingHorizontal: 14, minHeight: CHIP_HEIGHT, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 });
 
 /** Inline error text that VoiceOver announces when it appears. */

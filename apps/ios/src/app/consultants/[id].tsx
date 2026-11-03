@@ -15,7 +15,7 @@ import { requireAuth } from '@/lib/auth';
 import { cityName, dateLocale, sarFull } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
-import { MARGIN, useTheme } from '@/theme';
+import { MARGIN, typeStyle, useTheme } from '@/theme';
 
 const TIMES = ['16:00', '17:00', '18:00', '19:00', '20:00'];
 
@@ -162,7 +162,7 @@ export default function ConsultantProfile() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: MARGIN, marginTop: 12 }}>
             {TIMES.map((tm) =>
               busy(day, tm) ? (
-                <View key={tm} style={[styles.busy, { backgroundColor: c.fillTertiary }]}>
+                <View key={tm} style={[styles.busy, { backgroundColor: c.fillTertiary, paddingVertical: Math.max(0, (34 - (typeStyle('subhead', lang).lineHeight ?? 20)) / 2) }]}>
                   <Text variant="subhead" color="labelTertiary" tabular style={{ textDecorationLine: 'line-through' }}>
                     {tm}
                   </Text>
@@ -189,6 +189,6 @@ const styles = StyleSheet.create({
   avatar: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
   stats: { flexDirection: 'row', gap: 10, paddingHorizontal: MARGIN, marginTop: 20 },
   day: { minWidth: 60, minHeight: 72, paddingHorizontal: 8, paddingVertical: 8, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  busy: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  busy: { paddingHorizontal: 14, minHeight: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   cta: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: MARGIN, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
 });
