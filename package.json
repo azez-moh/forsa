@@ -1,0 +1,16 @@
+{
+  "name": "forsa",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Forsa w Tamkeen (فرصة وتمكين) redesign concept: Next.js website + Expo iPhone app on shared data and design tokens",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "web": "npm run dev -w @forsa/web",
+    "web:build": "npm run build -w @forsa/web",
+    "ios": "npm run ios -w @forsa/ios",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
