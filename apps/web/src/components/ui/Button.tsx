@@ -13,6 +13,7 @@ import { cn } from '@/lib/cn';
  * - pressed: scale .97 + opacity .85 · disabled: 40% · focus: 3px ring, offset 2
  */
 export type ButtonVariant = 'filled' | 'tinted' | 'gray' | 'plain' | 'destructive';
+/** `onDark` swaps filled/tinted to their on-navy equivalents (white fill + navy label; translucent white). */
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const base =
@@ -39,8 +40,15 @@ const variants: Record<ButtonVariant, string> = {
   destructive: 'bg-danger text-white hover:brightness-[0.94]',
 };
 
-export function buttonClasses(variant: ButtonVariant = 'filled', size: ButtonSize = 'md', full = false, className?: string) {
-  return cn(base, sizes[size], variants[variant], variant === 'plain' && size !== 'lg' && 'px-2', full && 'w-full', className);
+const onDarkVariants: Partial<Record<ButtonVariant, string>> = {
+  filled: 'bg-white text-[#17234F] hover:brightness-95',
+  tinted: 'bg-white/12 text-white hover:bg-white/20',
+  plain: 'bg-transparent text-white hover:opacity-80',
+};
+
+export function buttonClasses(variant: ButtonVariant = 'filled', size: ButtonSize = 'md', full = false, className?: string, onDark = false) {
+  const v = (onDark && onDarkVariants[variant]) || variants[variant];
+  return cn(base, sizes[size], v, variant === 'plain' && size !== 'lg' && 'px-2', full && 'w-full', className);
 }
 
 type Common = {
@@ -50,6 +58,7 @@ type Common = {
   icon?: ReactNode;
   iconEnd?: ReactNode;
   loading?: boolean;
+  onDark?: boolean;
 };
 
 export type ButtonProps = Common & ButtonHTMLAttributes<HTMLButtonElement>;
@@ -64,7 +73,7 @@ function Spinner() {
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = 'filled', size = 'md', full, icon, iconEnd, loading, className, children, disabled, type = 'button', ...rest },
+  { variant = 'filled', size = 'md', full, icon, iconEnd, loading, onDark, className, children, disabled, type = 'button', ...rest },
   ref,
 ) {
   return (
@@ -73,7 +82,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={buttonClasses(variant, size, full, className)}
+      className={buttonClasses(variant, size, full, className, onDark)}
       {...rest}
     >
       {/* Label crossfades to a spinner; width stays locked (tokens.button.states.loading). */}
@@ -93,9 +102,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 
 export type ButtonLinkProps = Common & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
-export function ButtonLink({ variant = 'filled', size = 'md', full, icon, iconEnd, className, children, href, ...rest }: ButtonLinkProps) {
+export function ButtonLink({ variant = 'filled', size = 'md', full, icon, iconEnd, onDark, className, children, href, loading: _loading, ...rest }: ButtonLinkProps) {
+  void _loading;
   const external = /^https?:/.test(href);
-  const cls = buttonClasses(variant, size, full, className);
+  const cls = buttonClasses(variant, size, full, className, onDark);
   if (external) {
     return (
       <a href={href} className={cls} target="_blank" rel="noopener noreferrer" {...rest}>

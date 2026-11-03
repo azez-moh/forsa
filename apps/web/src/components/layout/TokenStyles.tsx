@@ -5,7 +5,7 @@ function block(scheme: ColorScheme): string {
   const vars = cssVariables(scheme);
   const lines = Object.entries(vars).map(([k, v]) => `--fz-${k.slice(2)}:${v};`);
   lines.push(`--fz-navy:${brandSource.navy};`);
-  lines.push(`--fz-navy-deep:${scheme === 'dark' ? '#0B1230' : brandSource.navy};`);
+  lines.push(`--fz-navy-deep:${scheme === 'dark' ? '#0B1230' : '#0E1738'};`);
   lines.push(`--fz-warm:${brandSource.warm};`);
   lines.push(`--fz-type-sale:${scheme === 'dark' ? brandSource.primaryDark : opportunityTypes.sale.color};`);
   lines.push(`--fz-type-investment:${scheme === 'dark' ? brandSource.accentDark : opportunityTypes.investment.color};`);

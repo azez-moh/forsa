@@ -140,8 +140,17 @@ export function cityStats() {
     .sort((a, b) => b.count - a.count);
 }
 
+const TYPE_DESC: Record<OpportunityType, { ar: string; en: string }> = {
+  [OpportunityType.ForSale]: { ar: 'مشاريع قائمة تبحث عن مالك جديد، كاملة أو بحصة.', en: 'Running businesses looking for a new owner, in full or in part.' },
+  [OpportunityType.Investment]: { ar: 'مشاريع تطلب تمويلًا مقابل حصة واضحة وعائد متوقع.', en: 'Businesses raising capital for clear equity and expected returns.' },
+  [OpportunityType.PartnerSearch]: { ar: 'أصحاب مشاريع يبحثون عن شريك تشغيلي أو ممول.', en: 'Owners looking for an operating or funding partner.' },
+  [OpportunityType.InvestorForIdea]: { ar: 'أفكار ومشاريع ناشئة تحتاج مستثمرًا يؤمن بها.', en: 'Ideas and early ventures that need a believing investor.' },
+};
+
 export function typeCounts() {
   return TYPE_ORDER.map((t) => ({
+    descriptionAr: TYPE_DESC[t].ar,
+    descriptionEn: TYPE_DESC[t].en,
     id: t,
     slug: typeSlug(t),
     nameAr: typeLabel(t, 'ar', false),

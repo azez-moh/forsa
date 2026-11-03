@@ -12,12 +12,22 @@ import { cn } from '@/lib/cn';
 import { Media } from './Media';
 import { Badge } from './Badge';
 
+/** Real cards are one link; the wizard's live preview renders the same markup as an inert div. */
+function Shell({ preview, href, onClick, className, children, ...rest }: { preview: boolean; href: string; onClick: (e: MouseEvent<HTMLAnchorElement>) => void; className: string; children: React.ReactNode; 'aria-label'?: string }) {
+  if (preview) return <div className={className}>{children}</div>;
+  return (
+    <Link href={href} onClick={onClick} className={className} {...rest}>
+      {children}
+    </Link>
+  );
+}
+
 /**
  * Opportunity card (US-OPP-01, US-OPP-03, US-OPP-04, US-A11Y-04).
  * Radius 16, media 16:10, type dot + label, headline title, city · category, labelled price and facts.
  * The whole card is one link (reads as one element); "حفظ" sits outside the link.
  */
-export function OpportunityCard({ o, priority, className }: { o: Opportunity; priority?: boolean; className?: string }) {
+export function OpportunityCard({ o, priority, className, preview = false }: { o: Opportunity; priority?: boolean; className?: string; preview?: boolean }) {
   const { t, locale, isSaved, toggleSaved, showToast } = useApp();
   const media = useRef<HTMLDivElement>(null);
   const navigate = useTransitionNavigate();
@@ -39,10 +49,11 @@ export function OpportunityCard({ o, priority, className }: { o: Opportunity; pr
 
   return (
     <article className={cn('group relative h-full', className)}>
-      <Link
+      <Shell
+        preview={preview}
         href={href}
         onClick={onClick}
-        aria-label={a11y}
+        aria-label={preview ? undefined : a11y}
         className="flex h-full flex-col overflow-hidden rounded-lg bg-bg-3 shadow-e1 ring-1 ring-separator/25 transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:shadow-e2 focus-visible:outline-offset-4"
       >
         <div ref={media} className="relative">
@@ -106,8 +117,8 @@ export function OpportunityCard({ o, priority, className }: { o: Opportunity; pr
             </p>
           </div>
         </div>
-      </Link>
-      <button
+      </Shell>
+      {!preview && <button
         type="button"
         onClick={() => {
           toggleSaved(o.id);
@@ -118,7 +129,7 @@ export function OpportunityCard({ o, priority, className }: { o: Opportunity; pr
         className="absolute end-3 top-3 grid size-11 place-items-center rounded-full bg-bg/85 text-label shadow-e1 backdrop-blur transition-transform active:scale-[0.97]"
       >
         <Bookmark size={18} aria-hidden className={saved ? 'fill-primary text-primary' : ''} />
-      </button>
+      </button>}
     </article>
   );
 }

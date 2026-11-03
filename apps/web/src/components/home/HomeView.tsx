@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { ArrowLeft, BadgeCheck, FileLock2, Percent, PlayCircle, Search } from 'lucide-react';
-import { consultants, featuredOpportunities, platformStats, services, videos, getProvider } from '@forsa/data';
+import { featuredOpportunities, platformStats, services, videos, getProvider } from '@forsa/data';
 import { useApp } from '@/lib/store';
 import { cityStats, typeCounts } from '@/lib/opportunity';
+import { publicConsultants } from '@/lib/services';
 import { formatCompact, formatSAR } from '@/lib/format';
 import { ButtonLink } from '@/components/ui/Button';
 import { OpportunityCard } from '@/components/ui/OpportunityCard';
@@ -41,12 +42,10 @@ export function HomeView() {
 
   return (
     <>
-      {/* 1 · Cinematic hero (Wow agent) with our headline + CTAs in the children slot */}
+      {/* 1 · Cinematic hero (Wow agent). It renders the H1 and the live counter; we supply search + CTAs. */}
       <HeroCounter totalValueSar={platformStats.totalValueSar} users={platformStats.users} opportunities={platformStats.opportunities} locale={locale}>
-        <div className="max-w-3xl">
-          <h1 className="t-display-xl text-white">{t('heroTitle')}</h1>
-          <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-white/75 md:text-[20px]">{t('heroLead')}</p>
-          <form onSubmit={onSearch} role="search" className="mt-8 flex max-w-xl items-center gap-2 rounded-full bg-white/10 p-1.5 ring-1 ring-white/20 backdrop-blur focus-within:ring-white/50">
+        <div className="flex w-full flex-col items-center gap-5">
+          <form onSubmit={onSearch} role="search" className="flex w-full max-w-xl items-center gap-2 rounded-full bg-white/10 p-1.5 ring-1 ring-white/20 backdrop-blur focus-within:ring-white/50">
             <Search size={18} aria-hidden className="ms-3 shrink-0 text-white/70" />
             <label htmlFor="hero-q" className="sr-only">
               {t('searchLabel')}
@@ -59,39 +58,35 @@ export function HomeView() {
               className="h-11 min-w-0 flex-1 bg-transparent text-[16px] text-white placeholder:text-white/55 outline-none"
             />
           </form>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <ButtonLink href="/opportunities/" size="lg" className="bg-white text-[#17234F] hover:brightness-95">
+          <div className="flex flex-wrap justify-center gap-3">
+            <ButtonLink href="/opportunities/" size="lg" onDark>
               {t('heroCtaExplore')}
             </ButtonLink>
-            <ButtonLink href="/add/" size="lg" variant="tinted" className="bg-white/12 text-white hover:bg-white/20">
+            <ButtonLink href="/add/" size="lg" variant="tinted" onDark>
               {t('heroCtaAdd')}
             </ButtonLink>
           </div>
         </div>
       </HeroCounter>
 
-      {/* 2 · Proof band */}
-      <section aria-labelledby="stats-h" className="border-b border-separator/40">
-        <h2 id="stats-h" className="sr-only">
-          {t('statsValue')}
-        </h2>
-        <div className="container-page grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16">
-          <StatTile value={formatSAR(platformStats.totalValueSar, locale)} label={t('statsValue')} />
-          <StatTile value={platformStats.opportunities.toLocaleString('en-US')} label={t('statsOpportunities')} />
-          <StatTile value={platformStats.users.toLocaleString('en-US')} label={t('statsUsers')} />
-          <StatTile value={formatCompact(platformStats.totalViews, locale)} label={t('statsViews')} />
-        </div>
-        <p className="container-page -mt-6 pb-10 text-[13px] text-label-2">{t('statsAsOf')}</p>
-      </section>
+      {/* 2 · Four types story (Wow agent) — full-bleed navy chapter that continues the hero */}
+      <TypeStory types={types} locale={locale} />
 
-      {/* 3 · Four types story (Wow agent) */}
-      <section className="section-gap" aria-labelledby="types-h">
-        <div className="container-page">
-          <div id="types-h">
-            <SectionHeader title={t('typesTitle')} lead={t('typesLead')} />
-          </div>
-          <TypeStory types={types} locale={locale} />
+      {/* 3 · Proof band (figures the hero does not already show) */}
+      <section aria-labelledby="stats-h" className="border-b border-separator/40">
+        <div className="container-page pt-16 md:pt-24">
+          <h2 id="stats-h" className="t-display-m max-w-2xl">
+            {t('typesTitle')}
+          </h2>
+          <p className="mt-3 max-w-2xl text-[17px] text-label-2 md:text-[19px]">{t('typesLead')}</p>
         </div>
+        <div className="container-page grid grid-cols-2 gap-8 py-12 md:grid-cols-4 md:py-16">
+          <StatTile value={platformStats.forSaleOpportunities.toLocaleString('en-US')} label={locale === 'ar' ? 'فرصة للبيع' : 'businesses for sale'} />
+          <StatTile value={platformStats.investmentOpportunities.toLocaleString('en-US')} label={locale === 'ar' ? 'فرصة استثمارية' : 'investment opportunities'} />
+          <StatTile value={formatCompact(platformStats.totalViews, locale)} label={t('statsViews')} />
+          <StatTile value={`${platformStats.commissionPercent}%`} label={locale === 'ar' ? 'عمولة على الصفقات المكتملة فقط' : 'commission on completed deals only'} />
+        </div>
+        <p className="container-page -mt-6 pb-12 text-[13px] text-label-2">{t('statsAsOf')}</p>
       </section>
 
       {/* 4 · Featured */}
@@ -237,7 +232,7 @@ export function HomeView() {
             />
           </div>
           <ul className="no-scrollbar -mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-5">
-            {consultants.map((c) => (
+            {publicConsultants().map((c) => (
               <li key={c.id} className="w-60 shrink-0 snap-start md:w-auto">
                 <Link href={`/consultants/${c.id}/`} className="flex h-full flex-col items-start gap-3 rounded-lg bg-bg-2 p-5 hover:bg-fill-3">
                   <ConsultantAvatar name={c.name} />
@@ -295,10 +290,10 @@ export function HomeView() {
             <p className="mt-4 text-[19px] text-white/70">{t('finalLead')}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/add/" size="lg" className="bg-white text-[#17234F] hover:brightness-95">
+            <ButtonLink href="/add/" size="lg" onDark>
               {t('heroCtaAdd')}
             </ButtonLink>
-            <ButtonLink href="/opportunities/" size="lg" variant="tinted" className="bg-white/12 text-white hover:bg-white/20">
+            <ButtonLink href="/opportunities/" size="lg" variant="tinted" onDark>
               {t('heroCtaExplore')}
             </ButtonLink>
           </div>

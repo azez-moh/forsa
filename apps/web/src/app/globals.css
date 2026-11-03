@@ -7,7 +7,7 @@
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-@theme inline {
+@theme static {
   --color-primary: var(--fz-color-primary);
   --color-primary-tint: var(--fz-color-primary-tint);
   --color-on-primary: var(--fz-color-on-primary);
@@ -71,6 +71,7 @@
 }
 
 @layer base {
+  fieldset { min-width: 0; }
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;

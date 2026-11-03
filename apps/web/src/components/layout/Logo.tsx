@@ -14,7 +14,7 @@ export function LogoMark({ className, onDark }: { className?: string; onDark?: b
 
 export function Wordmark({ label, className, onDark }: { label: string; className?: string; onDark?: boolean }) {
   return (
-    <span className={cn('inline-flex items-center gap-2', className)}>
+    <span className={cn('inline-flex items-center gap-2 whitespace-nowrap', className)}>
       <LogoMark onDark={onDark} />
       <span className={cn('font-[800] text-[21px] leading-none tracking-normal', onDark ? 'text-white' : 'text-label')} style={{ fontFamily: 'var(--font-tajawal)' }}>
         {label}

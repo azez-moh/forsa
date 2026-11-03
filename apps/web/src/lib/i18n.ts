@@ -29,7 +29,7 @@ const ar = {
   navClose: 'إغلاق',
   navMain: 'التنقل الرئيسي',
   navTabs: 'تبويبات التطبيق',
-  navLearn: 'تعلّم',
+  navLearn: 'مركز الثقافة',
 
   // home
   heroTitle: 'فرصتك على بعد خطوة',
@@ -327,6 +327,7 @@ const ar = {
 
   // culture & articles
   culturePageLead: 'سلاسل مرئية ومقالات عملية تقودك من الفكرة إلى الصفقة.',
+  audienceLabel: 'الجمهور',
   audienceEntre: 'رائد أعمال',
   audienceInvestor: 'رائد أعمال ومستثمر',
   watch: 'شاهد',
@@ -800,6 +801,7 @@ const en: Record<DictKey, string> = {
   consultDisclaimer: 'Consultations are advisory and are not a certified legal opinion.',
 
   culturePageLead: 'Video series and practical articles that take you from idea to deal.',
+  audienceLabel: 'Audience',
   audienceEntre: 'Founder',
   audienceInvestor: 'Founder and investor',
   watch: 'Watch',

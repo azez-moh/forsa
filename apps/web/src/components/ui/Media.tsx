@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Briefcase,
   Cpu,
@@ -52,6 +52,12 @@ export function Media({
   priority?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // An image that failed before hydration never fires onError in React; detect it on mount.
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth === 0) setFailed(true);
+  }, [src]);
   const Icon = CATEGORY_ICON[categoryId] ?? Shapes;
   const show = src && !failed;
   return (
@@ -59,6 +65,7 @@ export function Media({
       {show ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           loading={priority ? 'eager' : 'lazy'}

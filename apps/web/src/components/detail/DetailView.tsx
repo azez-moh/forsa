@@ -71,7 +71,7 @@ export function DetailView({ o }: { o: Opportunity }) {
   const docs: DictKey[] = ['docFinancials', 'docCr', 'docLease', 'docDeck'];
 
   return (
-    <article className="pb-32 pt-20 md:pb-24 md:pt-24">
+    <article className="pb-48 pt-20 md:pb-24 md:pt-24">
       <div className="container-page">
         <Breadcrumbs
           label={t('breadcrumbHome')}

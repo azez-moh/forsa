@@ -11,13 +11,13 @@ import { Sheet } from '@/components/ui/Sheet';
 import { Wordmark } from './Logo';
 import type { DictKey } from '@/lib/i18n';
 
-export const NAV_ITEMS: Array<{ href: string; key: DictKey }> = [
+export const NAV_ITEMS: Array<{ href: string; key: DictKey; wide?: boolean }> = [
   { href: '/opportunities/', key: 'navOpportunities' },
   { href: '/services/', key: 'navServices' },
   { href: '/consultants/', key: 'navConsultants' },
-  { href: '/culture-center/', key: 'navCulture' },
-  { href: '/articles/', key: 'navArticles' },
-  { href: '/about/', key: 'navAbout' },
+  { href: '/culture-center/', key: 'navLearn' },
+  { href: '/articles/', key: 'navArticles', wide: true },
+  { href: '/about/', key: 'navAbout', wide: true },
 ];
 
 /**
@@ -45,7 +45,7 @@ export function GlassNav() {
 
   const linkCls = (href: string) =>
     cn(
-      'relative inline-flex h-11 items-center rounded-full px-3 text-[15px] font-medium transition-colors',
+      'relative inline-flex h-11 items-center whitespace-nowrap rounded-full px-3 text-[15px] font-medium transition-colors',
       transparent ? 'text-white/80 hover:text-white' : 'text-label-2 hover:text-label',
       pathname.startsWith(href) && (transparent ? 'text-white' : 'text-label font-bold'),
     );
@@ -62,9 +62,9 @@ export function GlassNav() {
           <Link href="/" aria-label={t('brand')} className="-ms-1 rounded-md p-1">
             <Wordmark label={t('brand')} onDark={transparent} />
           </Link>
-          <nav aria-label={t('navMain')} className="ms-6 hidden flex-1 items-center gap-1 lg:flex">
+          <nav aria-label={t('navMain')} className="ms-4 hidden flex-1 items-center gap-0.5 lg:flex">
             {NAV_ITEMS.map((n) => (
-              <Link key={n.href} href={n.href} className={linkCls(n.href)} aria-current={pathname.startsWith(n.href) ? 'page' : undefined}>
+              <Link key={n.href} href={n.href} className={cn(linkCls(n.href), n.wide && 'hidden xl:inline-flex')} aria-current={pathname.startsWith(n.href) ? 'page' : undefined}>
                 {t(n.key)}
               </Link>
             ))}
@@ -83,27 +83,31 @@ export function GlassNav() {
               <Languages size={17} aria-hidden />
               <span className="hidden sm:inline">{t('langToggle')}</span>
             </button>
-            <IconButton
-              label={t('themeToggle')}
-              variant="plain"
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className={cn('hidden md:inline-flex', transparent ? 'text-white/85' : 'text-label-2')}
-            >
-              {isDark ? <Sun size={18} aria-hidden /> : <Moon size={18} aria-hidden />}
-            </IconButton>
+            <span className="hidden xl:contents">
+              <IconButton
+                label={t('themeToggle')}
+                variant="plain"
+                onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                className={transparent ? 'text-white/85' : 'text-label-2'}
+              >
+                {isDark ? <Sun size={18} aria-hidden /> : <Moon size={18} aria-hidden />}
+              </IconButton>
+            </span>
             <Link
               href={user ? '/dashboard/' : '/login/'}
               className={cn(
-                'hidden h-11 items-center gap-1.5 rounded-full px-3 text-[15px] font-medium md:inline-flex',
+                'hidden h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[15px] font-medium md:inline-flex',
                 transparent ? 'text-white/85 hover:text-white' : 'text-label-2 hover:text-label',
               )}
             >
               <UserRound size={17} aria-hidden />
               {user ? t('navDashboard') : t('navLogin')}
             </Link>
-            <ButtonLink href="/add/" size="md" icon={<Plus size={17} aria-hidden />} className="hidden md:inline-flex">
-              {t('navAdd')}
-            </ButtonLink>
+            <span className="hidden md:contents">
+              <ButtonLink href="/add/" size="md" icon={<Plus size={17} aria-hidden />}>
+                {t('navAdd')}
+              </ButtonLink>
+            </span>
             <IconButton
               label={t('navMenu')}
               variant="plain"
@@ -119,7 +123,7 @@ export function GlassNav() {
 
       <Sheet open={menu} onClose={() => setMenu(false)} title={t('navMenu')} closeLabel={t('close')} size="sm">
         <nav aria-label={t('navMain')} className="flex flex-col">
-          {[{ href: '/', key: 'navHome' as DictKey }, ...NAV_ITEMS, { href: '/faq/', key: 'navFaq' as DictKey }, { href: '/contact/', key: 'navContact' as DictKey }].map((n) => (
+          {[{ href: '/', key: 'navHome' as DictKey }, ...NAV_ITEMS.map((n) => (n.href === '/culture-center/' ? { ...n, key: 'navCulture' as DictKey } : n)), { href: '/faq/', key: 'navFaq' as DictKey }, { href: '/contact/', key: 'navContact' as DictKey }].map((n) => (
             <Link
               key={n.href}
               href={n.href}
