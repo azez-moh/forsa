@@ -1,6 +1,7 @@
 import { getOpportunity, getService, OpportunityType, opportunities, users, type Opportunity } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { Image } from 'expo-image';
+import { StatusBar } from 'expo-status-bar';
 import { Link, router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Dimensions, Share, StyleSheet, View } from 'react-native';
@@ -8,12 +9,14 @@ import Animated, {
   Extrapolation,
   FadeInUp,
   interpolate,
+  useAnimatedReaction,
   useAnimatedRef,
   useAnimatedStyle,
   useReducedMotion,
   useScrollOffset,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { BlurView } from 'expo-blur';
 
@@ -25,7 +28,7 @@ import { ScalePressable } from '@/components/Pressable';
 import { Text } from '@/components/Text';
 import { Badge, Card, DemoTag, EmptyState, SectionHeader, toast, ErrorText } from '@/components/ui';
 import { useT, type StringKey } from '@/i18n';
-import { categoryName, cityName, daysSince, num, priceInWords, sarFull, stageLabel, typeColor, typeShort, typeSymbol } from '@/lib/format';
+import { categoryName, cityName, countNoun, daysSince, statusKey, num, priceInWords, sarFull, stageLabel, typeColor, typeShort, typeSymbol } from '@/lib/format';
 import { biometricGate } from '@/lib/faceid';
 import { haptic } from '@/lib/haptics';
 import { isOwnListing, useApp } from '@/store/app';
@@ -51,7 +54,7 @@ function buildMetrics(o: Opportunity, lang: 'ar' | 'en', t: (k: StringKey) => st
     { key: 'annualRevenue', ...lockedOr(m.annualRevenueSar, (n) => sarFull(n, lang)) },
     { key: 'netMargin', ...lockedOr(m.profitMargin, (n) => `${Math.round(n * 100)}%`) },
     { key: 'monthlyProfit', ...lockedOr(m.monthlyNetProfitSar, (n) => sarFull(n, lang)) },
-    { key: 'payback', ...lockedOr(m.paybackMonths, (n) => `${n} ${t('months')}`) },
+    { key: 'payback', ...lockedOr(m.paybackMonths, (n) => countNoun(n, 'month', lang)) },
   ];
   if (!isIdea) {
     list.push(
@@ -83,9 +86,17 @@ export default function OpportunityDetail() {
   const session = useApp((s) => s.session);
   const [doc, setDoc] = useState<string | null>(null);
   const [gateError, setGateError] = useState(false);
+  // Light status bar over the darkened hero photo; system default once the glass header takes over.
+  const [overHero, setOverHero] = useState(true);
 
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const offset = useScrollOffset(scrollRef);
+  useAnimatedReaction(
+    () => offset.value < HERO - 100,
+    (now, prev) => {
+      if (now !== prev) scheduleOnRN(setOverHero, now);
+    },
+  );
 
   // Parallax: image moves at half speed and stretches on overscroll.
   const heroStyle = useAnimatedStyle(() => {
@@ -141,11 +152,12 @@ export default function OpportunityDetail() {
   const cta = own
     ? { title: t('manageListing'), icon: 'slider.horizontal.3', onPress: () => router.push('/inbox') }
     : myInquiry
-      ? { title: t('viewRequestStatus'), icon: 'clock', onPress: () => router.push('/profile') }
+      ? { title: t('viewRequestStatus'), icon: 'clock', onPress: () => router.push({ pathname: '/profile', params: { tab: 'requests' } }) }
       : { title: t('requestContact'), icon: 'paperplane.fill', onPress: () => router.push({ pathname: '/inquiry/[id]', params: { id: String(o.id) } }) };
 
   return (
     <View style={{ flex: 1, backgroundColor: c.groupedBg }}>
+      <StatusBar style={overHero ? 'light' : 'auto'} />
       <Stack.Screen
         options={{
           headerTransparent: true,
@@ -177,14 +189,14 @@ export default function OpportunityDetail() {
                 <Image source={{ uri: o.images[0] }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
               ) : (
                 <View style={[StyleSheet.absoluteFill, { backgroundColor: c.navy, alignItems: 'center', justifyContent: 'center' }]}>
-                  <Icon name={typeSymbol[o.type]} size={72} color="rgba(255,255,255,0.5)" />
+                  <Icon name={typeSymbol[o.type]} size={72} color={c.onDarkTertiary} />
                 </View>
               )}
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.18)' }]} />
+              <View style={[StyleSheet.absoluteFill, { backgroundColor: c.scrim }]} />
             </Animated.View>
           </Link.AppleZoomTarget>
           {o.images.length > 1 ? (
-            <View style={styles.counter}>
+            <View style={[styles.counter, { backgroundColor: c.scrimStrong }]}>
               <Text variant="caption1" weight="600" style={{ color: '#FFFFFF' }} tabular>
                 1 / {o.images.length}
               </Text>
@@ -221,7 +233,7 @@ export default function OpportunityDetail() {
 
           <View style={styles.counters}>
             <Text variant="footnote" color="labelSecondary" tabular>
-              {posted === 0 ? t('today') : `${t('postedAgo')} ${posted} ${t('days')}`}
+              {posted === 0 ? t('today') : lang === 'ar' ? `${t('postedAgo')} ${countNoun(posted, 'day', 'ar')}` : `${t('postedAgo')} ${countNoun(posted, 'day', 'en')} ago`}
             </Text>
             <Text variant="footnote" color="labelSecondary" tabular>
               · {t('views')} {num(o.views)}
@@ -323,6 +335,7 @@ export default function OpportunityDetail() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
                   <Button
                     title={t('simulateApproval')}
+                    haptics={false}
                     variant="tinted"
                     size="small"
                     onPress={() => {
@@ -375,10 +388,14 @@ export default function OpportunityDetail() {
       {/* Sticky primary action over a material bar */}
       <View style={[styles.ctaBar, { paddingBottom: insets.bottom + 8, borderTopColor: c.separator }]}>
         <BlurView intensity={90} tint="systemChromeMaterial" style={StyleSheet.absoluteFill} />
-        <View style={{ flex: 1 }}>
-          <Text variant="caption1" color="labelSecondary">
-            {o.type === OpportunityType.ForSale ? t('price') : t('requiredInvestment')}
-          </Text>
+        <View style={{ flex: 1, gap: 2 }}>
+          {myInquiry && !own ? (
+            <Badge label={t(statusKey[myInquiry.status])} tone={myInquiry.docsApproved ? 'success' : 'primary'} />
+          ) : (
+            <Text variant="caption1" color="labelSecondary">
+              {o.type === OpportunityType.ForSale ? t('price') : t('requiredInvestment')}
+            </Text>
+          )}
           <Text variant="headline" tabular numberOfLines={1}>
             {sarFull(o.priceSar, lang)}
           </Text>
@@ -412,7 +429,7 @@ function TrustLine({ icon, label }: { icon: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  counter: { position: 'absolute', bottom: 28, end: 16, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  counter: { position: 'absolute', bottom: 28, end: 16, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
   sheet: { marginTop: -20, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, paddingHorizontal: MARGIN, paddingTop: 20, gap: 6 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 8, height: 8, borderRadius: 4 },

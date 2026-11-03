@@ -11,6 +11,7 @@ import { Text } from '@/components/Text';
 import { EmptyState, toast } from '@/components/ui';
 import { useT } from '@/i18n';
 import { cityName, TYPE_ORDER, typeSegment } from '@/lib/format';
+import { requireAuth } from '@/lib/auth';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
 import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
@@ -141,11 +142,14 @@ export default function OpportunitiesScreen() {
                 variant="gray"
                 size="small"
                 accessibilityLabel={t('saveSearch')}
-                onPress={() => {
-                  saveSearch(`${typeIndex}|${query}|${nFilters}`);
-                  haptic.light();
-                  toast(t('searchSaved'));
-                }}
+                onPress={() =>
+                  // Gated action (US-AUTH-01): sign in, then the search is saved.
+                  requireAuth(() => {
+                    saveSearch(`${typeIndex}|${query}|${nFilters}`);
+                    haptic.light();
+                    toast(t('searchSaved'));
+                  })
+                }
               />
             </View>
           </View>

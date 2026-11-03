@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { AppState, Modal, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useT } from '@/i18n';
+import { dateLocale } from '@/lib/format';
 import { MARGIN, useTheme } from '@/theme';
 
 import { Button } from './Button';
@@ -22,7 +23,7 @@ export function DocViewer({ doc, name, onClose }: { doc: string | null; name: st
     const sub = AppState.addEventListener('change', (s) => setCovered(s !== 'active'));
     return () => sub.remove();
   }, []);
-  const date = new Date().toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-GB');
+  const date = new Date().toLocaleDateString(dateLocale(lang));
   const mark = `${lang === 'ar' ? 'سري' : 'Confidential'} — ${name} — ${date}`;
   return (
     <Modal visible={!!doc} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>

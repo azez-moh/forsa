@@ -163,7 +163,7 @@ export default function ServiceDetail() {
             </Text>
           </Card>
           <Field label={t('requestNotes')} value={notes} onChangeText={(v) => { setNotes(v); setError(null); }} multiline error={error} autoFocus />
-          <Button title={t('submitRequest')} full onPress={submit} />
+          <Button title={t('submitRequest')} full onPress={submit} haptics={false} />
         </KeyboardAvoidingView>
       </Modal>
     </View>

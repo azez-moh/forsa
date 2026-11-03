@@ -22,13 +22,15 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   accessibilityHint?: string;
   accessibilityLabel?: string;
+  /** Light tap haptic. Turn off when the handler fires its own success/error haptic. */
+  haptics?: boolean;
 };
 
 /**
  * Apple-standard button: filled / tinted / gray / plain / destructive.
  * Visual heights 28/34/50 with a guaranteed 44pt hit target, press scale 0.97, light haptic.
  */
-export function Button({ title, onPress, variant = 'filled', size = 'large', icon, disabled, loading, full, style, accessibilityHint, accessibilityLabel }: Props) {
+export function Button({ title, onPress, variant = 'filled', size = 'large', icon, disabled, loading, full, style, accessibilityHint, accessibilityLabel, haptics = true }: Props) {
   const { c } = useTheme();
   const spec = button.sizes[size];
   const bg: Record<Variant, string> = {
@@ -37,7 +39,7 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
     gray: c.fillTertiary,
     plain: 'transparent',
     destructive: c.danger,
-    destructiveTinted: 'rgba(255,59,48,0.12)',
+    destructiveTinted: c.dangerTint,
   };
   const fg: Record<Variant, string> = {
     filled: c.onPrimary,
@@ -57,7 +59,7 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
       accessibilityState={{ disabled: !!disabled, busy: !!loading }}
       disabled={disabled || loading}
       onPress={onPress}
-      haptics="light"
+      haptics={haptics ? 'light' : false}
       hitSlop={{ top: vPad, bottom: vPad, left: 8, right: 8 }}
       style={[{ opacity: disabled ? 0.4 : 1, alignSelf: full ? 'stretch' : 'flex-start' }, style]}
     >

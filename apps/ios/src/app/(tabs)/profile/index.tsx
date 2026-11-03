@@ -1,6 +1,6 @@
 import { getConsultant, getOpportunity, getService } from '@forsa/data';
 import { radii } from '@forsa/tokens';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, I18nManager, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
@@ -22,7 +22,7 @@ import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
 
 /** S06 Profile: my listings (with stats), saved, my requests, services & bookings; settings; links to S14. */
 export default function Profile() {
-  const { c } = useTheme();
+  const { c, scheme } = useTheme();
   const { t, lang } = useT();
   const session = useApp((s) => s.session);
   const signOut = useApp((s) => s.signOut);
@@ -33,7 +33,12 @@ export default function Profile() {
   const serviceRequests = useApp((s) => s.serviceRequests);
   const bookings = useApp((s) => s.bookings);
   const lastPublishedId = useApp((s) => s.lastPublishedId);
+  const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState(0);
+  useEffect(() => {
+    const map: Record<string, number> = { listings: 0, saved: 1, requests: 2, services: 3 };
+    if (params.tab && params.tab in map) setTab(map[params.tab]);
+  }, [params.tab]);
 
   useEffect(() => {
     if (lastPublishedId) setTab(0);
@@ -193,9 +198,9 @@ export default function Profile() {
         {t('explorePlatform')}
       </Text>
       <Card padded={false} style={{ marginHorizontal: MARGIN }}>
-        <Row icon="briefcase.fill" iconBg="#0275D9" title={t('servicesHeader')} onPress={() => router.push('/services')} />
-        <Row icon="person.2.fill" iconBg="#17234F" title={t('consultantsHeader')} onPress={() => router.push('/consultants')} />
-        <Row icon="play.rectangle.fill" iconBg="#FF3B30" title={t('learnHeader')} onPress={() => router.push('/learn')} last />
+        <Row icon="briefcase.fill" iconBg={c.primary} title={t('servicesHeader')} onPress={() => router.push('/services')} />
+        <Row icon="person.2.fill" iconBg={scheme === 'dark' ? c.rowIndigo : c.navy} title={t('consultantsHeader')} onPress={() => router.push('/consultants')} />
+        <Row icon="play.rectangle.fill" iconBg={c.danger} title={t('learnHeader')} onPress={() => router.push('/learn')} last />
       </Card>
 
       <Text variant="footnote" color="labelSecondary" style={styles.groupLabel}>
@@ -203,7 +208,7 @@ export default function Profile() {
       </Text>
       <Card style={{ marginHorizontal: MARGIN, gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={[styles.rowIcon, { backgroundColor: '#5E6AD2' }]}>
+          <View style={[styles.rowIcon, { backgroundColor: c.rowIndigo }]}>
             <Icon name="globe" size={16} color="#FFFFFF" />
           </View>
           <Text style={{ flex: 1 }}>{t('language')}</Text>
@@ -212,8 +217,8 @@ export default function Profile() {
       </Card>
 
       <Card padded={false} style={{ marginHorizontal: MARGIN, marginTop: 20 }}>
-        <Row icon="info.circle.fill" iconBg="#8E8E93" title={t('aboutTitle')} onPress={() => router.push('/about')} />
-        <Row icon="questionmark.circle.fill" iconBg="#8E8E93" title={t('faqTitle')} onPress={() => router.push('/faq')} last={!session} />
+        <Row icon="info.circle.fill" iconBg={c.rowGray} title={t('aboutTitle')} onPress={() => router.push('/about')} />
+        <Row icon="questionmark.circle.fill" iconBg={c.rowGray} title={t('faqTitle')} onPress={() => router.push('/faq')} last={!session} />
         {session ? (
           <Row
             title={t('signOut')}

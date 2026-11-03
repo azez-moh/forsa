@@ -46,7 +46,7 @@ export function OpportunityCard({ o, compact }: { o: Opportunity; compact?: bool
     <Link href={{ pathname: '/opportunity/[id]', params: { id: String(o.id) } }} asChild>
       <ScalePressable
         accessibilityRole="button"
-        accessibilityLabel={`${o.title}، ${typeShort(o.type, lang)}، ${sar(o.priceSar, lang)}، ${cityName(o.cityId, lang)}`}
+        accessibilityLabel={`${o.title}، ${typeShort(o.type, lang)}، ${sar(o.priceSar, lang)}، ${cityName(o.cityId, lang)}${o.verified ? `، ${t('verified')}` : ''}`}
         style={StyleSheet.flatten([styles.card, { backgroundColor: c.card, width }])}
       >
         <Link.AppleZoom>

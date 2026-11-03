@@ -13,10 +13,10 @@ import { NotifyPrompt } from '@/components/NotifyPrompt';
 import { OtpInput } from '@/components/OtpInput';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Text } from '@/components/Text';
-import { Card, Chip, DemoTag } from '@/components/ui';
+import { Card, Chip, DemoTag, EmptyState } from '@/components/ui';
 import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
-import { sar } from '@/lib/format';
+import { dateLocale, sar } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
@@ -44,6 +44,12 @@ export default function InquirySheet() {
   const [budget, setBudget] = useState<number | null>(null);
   const [timeline, setTimeline] = useState<'tlNow' | 'tl3' | 'tl6'>('tl3');
   const [investorType, setInvestorType] = useState<'itIndividual' | 'itAngel' | 'itCompany' | 'itFund'>('itAngel');
+  // Prefill from the profile (US-INQ-02): owners/providers are usually companies, investors angels.
+  useEffect(() => {
+    if (!session) return;
+    const r = session.roles ?? [];
+    setInvestorType(r.includes('provider') || r.includes('owner') ? 'itCompany' : r.includes('investor') ? 'itAngel' : 'itIndividual');
+  }, [session]);
   const [agree, setAgree] = useState(false);
   const [signature, setSignature] = useState('');
   const [fullText, setFullText] = useState(false);
@@ -51,12 +57,24 @@ export default function InquirySheet() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const messageRef = useRef<TextInputInstance>(null);
+  const submitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // If the sheet is dismissed mid-verification, nothing is recorded.
+  useEffect(() => () => {
+    if (submitTimer.current) clearTimeout(submitTimer.current);
+  }, []);
 
   useEffect(() => {
     if (session && !signature) setSignature(session.name);
   }, [session, signature]);
 
-  if (!o) return null;
+  if (!o) {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.groupedBg }}>
+        <SheetHeader title={t('inquiryTitle')} />
+        <EmptyState icon="questionmark.folder" title={t('noResults')} action={t('done')} onAction={() => router.back()} />
+      </View>
+    );
+  }
   const nda = o.ndaRequired;
   const steps: Step[] = nda ? ['message', 'nda', 'otp', 'success'] : ['message', 'success'];
   const idx = steps.indexOf(step);
@@ -103,7 +121,7 @@ export default function InquirySheet() {
     if (step === 'otp') {
       if (otp.length !== 4) return fail(t('otpError'));
       setBusy(true);
-      setTimeout(() => {
+      submitTimer.current = setTimeout(() => {
         setBusy(false);
         submit(true); // NDA signed → success haptic
       }, 700);
@@ -210,7 +228,7 @@ export default function InquirySheet() {
               <View style={[styles.signature, { borderColor: c.separator }]}>
                 <Text style={{ fontSize: 26, lineHeight: 40, fontStyle: 'italic', color: c.navy }}>{signature.trim()}</Text>
                 <Text variant="caption1" color="labelSecondary" tabular>
-                  {new Date().toLocaleString(lang === 'ar' ? 'ar-SA-u-nu-latn' : 'en-GB')}
+                  {new Date().toLocaleString(dateLocale(lang))}
                 </Text>
               </View>
             ) : null}
@@ -236,7 +254,7 @@ export default function InquirySheet() {
 
         {step === 'success' ? (
           <Animated.View key="success" entering={reduced ? FadeIn : ZoomIn.springify().damping(14)} style={{ alignItems: 'center', gap: 14, paddingTop: 12 }}>
-            <View style={[styles.successIcon, { backgroundColor: 'rgba(52,199,89,0.15)' }]}>
+            <View style={[styles.successIcon, { backgroundColor: c.successTint }]}>
               <Icon name="checkmark" size={40} color={c.success} weight="bold" />
             </View>
             <Text variant="title2" align="center">
@@ -275,7 +293,7 @@ export default function InquirySheet() {
               title={step === 'message' ? (nda ? t('continue') : t('sendRequest')) : step === 'nda' ? t('signNda') : t('verify')}
               icon={step === 'nda' ? 'signature' : undefined}
               loading={busy}
-              onPress={next}
+              onPress={next} haptics={false}
               style={{ flex: 2 }}
               full
             />

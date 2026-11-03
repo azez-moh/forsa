@@ -47,8 +47,8 @@ export default function About() {
       <SectionHeader title={t('contact')} />
       <Card padded={false} style={{ marginHorizontal: MARGIN }}>
         <Row icon="envelope.fill" iconBg={c.primary} title={platformContact.email} onPress={() => Linking.openURL(`mailto:${platformContact.email}`)} />
-        <Row icon="message.fill" iconBg="#34C759" title="WhatsApp" onPress={() => Linking.openURL(platformContact.whatsapp)} />
-        <Row icon="doc.richtext" iconBg="#8E8E93" title={lang === 'ar' ? 'دليل المستخدم' : 'User guide'} onPress={() => WebBrowser.openBrowserAsync(platformContact.userGuidePdf).catch(() => {})} last />
+        <Row icon="message.fill" iconBg={c.success} title="WhatsApp" onPress={() => Linking.openURL(platformContact.whatsapp)} />
+        <Row icon="doc.richtext" iconBg={c.rowGray} title={lang === 'ar' ? 'دليل المستخدم' : 'User guide'} onPress={() => WebBrowser.openBrowserAsync(platformContact.userGuidePdf).catch(() => {})} last />
       </Card>
       <Text variant="caption2" color="labelTertiary" align="center" style={{ marginTop: 16 }}>
         {platformContact.address}

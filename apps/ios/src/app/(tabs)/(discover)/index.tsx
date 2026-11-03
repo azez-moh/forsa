@@ -12,7 +12,7 @@ import { Text } from '@/components/Text';
 import { ValueHero } from '@/components/ValueHero';
 import { Card, SectionHeader } from '@/components/ui';
 import { useT } from '@/i18n';
-import { num, sar, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
+import { countNoun, num, sar, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { DEMO_OWNER_ID } from '@/store/app';
 import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
@@ -102,7 +102,7 @@ export default function Discover() {
               {typeLong(type, lang)}
             </Text>
             <Text variant="footnote" color="labelSecondary" tabular>
-              {opportunitiesByType(type).length} {t('countOpp')}
+              {countNoun(opportunitiesByType(type).length, 'opportunity', lang)}
             </Text>
           </ScalePressable>
         ))}
@@ -128,14 +128,14 @@ export default function Discover() {
             pressScale={0.99}
             onPress={() => router.push({ pathname: '/opportunities', params: { city: city.id } })}
             accessibilityRole="button"
-            accessibilityLabel={`${loc(city.name)}، ${count} ${t('countOpp')}، ${sar(value, lang)}`}
+            accessibilityLabel={`${loc(city.name)}، ${countNoun(count, 'opportunity', lang)}، ${sar(value, lang)}`}
             style={[styles.cityRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.separator }]}
           >
             <View style={{ flex: 1, gap: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
                 <Text variant="headline">{loc(city.name)}</Text>
                 <Text variant="footnote" color="labelSecondary" tabular>
-                  {count} {t('countOpp')}
+                  {countNoun(count, 'opportunity', lang)}
                 </Text>
                 <View style={{ flex: 1 }} />
                 <Text variant="subhead" weight="600" tabular>
@@ -238,7 +238,7 @@ export default function Discover() {
         style={{ marginHorizontal: MARGIN }}
       >
         <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-          <View style={[styles.typeIcon, { backgroundColor: 'rgba(255,59,48,0.12)' }]}>
+          <View style={[styles.typeIcon, { backgroundColor: c.dangerTint }]}>
             <Icon name="play.rectangle.fill" size={20} color={c.danger} />
           </View>
           <View style={{ flex: 1 }}>

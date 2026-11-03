@@ -17,10 +17,10 @@ export function Badge({ label, tone = 'primary', icon }: { label: string; tone?:
   const fg = { primary: c.primary, success: c.success, warning: c.warning, neutral: c.labelSecondary, danger: c.danger }[tone];
   const bg = {
     primary: c.primaryTint,
-    success: 'rgba(52,199,89,0.14)',
-    warning: 'rgba(255,149,0,0.14)',
+    success: c.successTint,
+    warning: c.warningTint,
     neutral: c.fillTertiary,
-    danger: 'rgba(255,59,48,0.12)',
+    danger: c.dangerTint,
   }[tone];
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>

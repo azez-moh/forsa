@@ -27,7 +27,7 @@ const TABS: Record<string, { label: StringKey; icon: string; iconActive: string 
 export function GlassTabBar({ state, descriptors, emitter, navigateToTab, insets }: BottomTabBarProps) {
   const { c, scheme } = useTheme();
   const { t } = useT();
-  const badge = useApp((s) => s.incoming.filter((x) => x.unread).length);
+  const badge = useApp((s) => (s.session ? s.incoming.filter((x) => x.unread).length : 0));
 
   return (
     <View pointerEvents="box-none" style={[styles.wrap, { bottom: Math.max(insets.bottom - 6, 12) }]}>

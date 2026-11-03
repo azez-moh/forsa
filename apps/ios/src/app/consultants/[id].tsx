@@ -12,24 +12,30 @@ import { Text } from '@/components/Text';
 import { Badge, Card, Chip, EmptyState, SectionHeader, toast } from '@/components/ui';
 import { useT } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
-import { cityName, sarFull } from '@/lib/format';
+import { cityName, dateLocale, sarFull } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
 
 const TIMES = ['16:00', '17:00', '18:00', '19:00', '20:00'];
 
-/** Next 7 working days (Sun–Thu), Saudi work week. */
+const pad = (n: number) => String(n).padStart(2, '0');
+/** Local calendar date key (not UTC), so the key and the displayed day always agree. */
+const localKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+/** Next 14 days excluding Fri/Sat (Saudi work week), US-CNS-03. */
 function nextDays(lang: 'ar' | 'en') {
   const out: { key: string; dow: string; day: string }[] = [];
   const d = new Date();
-  while (out.length < 7) {
+  const end = new Date(d);
+  end.setDate(end.getDate() + 14);
+  while (d < end) {
     d.setDate(d.getDate() + 1);
     const wd = d.getDay();
     if (wd === 5 || wd === 6) continue;
     out.push({
-      key: d.toISOString().slice(0, 10),
-      dow: d.toLocaleDateString(lang === 'ar' ? 'ar-SA-u-nu-latn-ca-gregory' : 'en-GB', { weekday: 'short' }),
+      key: localKey(d),
+      dow: d.toLocaleDateString(dateLocale(lang), { weekday: 'short' }),
       day: String(d.getDate()),
     });
   }
@@ -173,7 +179,7 @@ export default function ConsultantProfile() {
         )}
       </ScrollView>
       <View style={[styles.cta, { paddingBottom: insets.bottom + 8, backgroundColor: c.groupedBg, borderTopColor: c.separator }]}>
-        <Button title={day && time ? `${t('book')} · ${time}` : t('book')} icon="calendar.badge.plus" full onPress={onBook} />
+        <Button title={day && time ? `${t('book')} · ${time}` : t('book')} icon="calendar.badge.plus" full onPress={onBook} haptics={false} />
       </View>
     </View>
   );

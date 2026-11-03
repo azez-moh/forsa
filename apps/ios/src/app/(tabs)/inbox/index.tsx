@@ -1,7 +1,7 @@
 import { getOpportunity, type InquiryStatus } from '@forsa/data';
 import { radii } from '@forsa/tokens';
 import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActionSheetIOS, Alert, FlatList, Modal, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import ReanimatedSwipeable, { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
@@ -149,6 +149,17 @@ function Pipeline({ header }: { header: React.ReactNode }) {
                 onLongPress={() => moveTo(item)}
                 accessibilityRole="button"
                 accessibilityHint={t('moveTo')}
+                // VoiceOver rotor actions mirror the swipe and long-press gestures.
+                accessibilityActions={[
+                  ...(NEXT[item.status] ? [{ name: 'advance', label: t(statusKey[NEXT[item.status]!]) }] : []),
+                  { name: 'move', label: t('moveTo') },
+                  ...(item.status.startsWith('closed') ? [] : [{ name: 'decline', label: t('decline') }]),
+                ]}
+                onAccessibilityAction={(e) => {
+                  if (e.nativeEvent.actionName === 'advance') advance(item);
+                  if (e.nativeEvent.actionName === 'move') moveTo(item);
+                  if (e.nativeEvent.actionName === 'decline') decline(item);
+                }}
                 style={[styles.inq, { backgroundColor: c.card }]}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -248,7 +259,7 @@ function InquiryDetail({
               </Text>
             </View>
             {q.status === 'closed-won' ? (
-              <Card style={{ backgroundColor: 'rgba(52,199,89,0.12)', gap: 4 }}>
+              <Card style={{ backgroundColor: c.successTint, gap: 4 }}>
                 <Text variant="headline" color="success">
                   {t('stWon')}
                   {q.dealValueSar ? ` · ${sarFull(q.dealValueSar, lang)}` : ''}
@@ -263,6 +274,7 @@ function InquiryDetail({
                 <Button
                   title={q.status === 'nda-signed' ? t('grantAccess') : q.status === 'new' ? t('sendNda') : t(statusKey[next])}
                   full
+                  haptics={false}
                   onPress={() => onAdvance(q)}
                 />
               ) : null}
@@ -294,7 +306,7 @@ function SwipeRow({
 }) {
   const { c } = useTheme();
   const ref = useRef<SwipeableMethods>(null);
-  const action = (label: string, color: string, icon: string, fn: () => void) => (
+  const action = (label: string, color: string, icon: string, fn: () => void, directional = false) => (
     <ScalePressable
       onPress={() => {
         ref.current?.close();
@@ -304,7 +316,7 @@ function SwipeRow({
       accessibilityLabel={label}
       style={[styles.swipeAction, { backgroundColor: color }]}
     >
-      <Icon name={icon} size={20} color="#FFFFFF" />
+      <Icon name={icon} size={20} color="#FFFFFF" directional={directional} />
       <Text variant="caption1" weight="600" style={{ color: '#FFFFFF' }} numberOfLines={1}>
         {label}
       </Text>
@@ -315,7 +327,7 @@ function SwipeRow({
       ref={ref}
       friction={1.6}
       overshootFriction={8}
-      renderLeftActions={onPrimary ? () => action(primaryLabel, c.primary, 'arrow.forward.circle.fill', onPrimary) : undefined}
+      renderLeftActions={onPrimary ? () => action(primaryLabel, c.primary, 'arrow.forward.circle.fill', onPrimary, true) : undefined}
       renderRightActions={onDestructive ? () => action(destructiveLabel, c.danger, 'xmark.circle.fill', onDestructive) : undefined}
       containerStyle={{ borderRadius: radii.lg, overflow: 'hidden' }}
     >
@@ -374,6 +386,10 @@ function Thread({ q, onClose }: { q: SentInquiry | null; onClose: () => void }) 
   const sendMessage = useApp((s) => s.sendMessage);
   const [text, setText] = useState('');
   const [typing, setTyping] = useState(false);
+  const replyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+  }, []);
   const o = q ? getOpportunity(q.opportunityId) : undefined;
   const send = () => {
     if (!q || !text.trim()) return;
@@ -382,7 +398,8 @@ function Thread({ q, onClose }: { q: SentInquiry | null; onClose: () => void }) 
     haptic.light();
     // Mock owner auto-reply
     setTyping(true);
-    setTimeout(() => {
+    if (replyTimer.current) clearTimeout(replyTimer.current);
+    replyTimer.current = setTimeout(() => {
       useApp.setState((s) => ({
         sent: s.sent.map((x) =>
           x.id === q.id ? { ...x, messages: [...x.messages, { id: `r${Date.now()}`, from: 'them', text: t('ownerAutoReply'), at: new Date().toISOString() }] } : x,
@@ -405,7 +422,7 @@ function Thread({ q, onClose }: { q: SentInquiry | null; onClose: () => void }) 
             {q.messages.map((m) => (
               <View key={m.id} style={[styles.bubble, m.from === 'me' ? { backgroundColor: c.primary, alignSelf: 'flex-end' } : { backgroundColor: c.card, alignSelf: 'flex-start' }]}>
                 <Text style={m.from === 'me' ? { color: c.onPrimary } : undefined}>{m.text}</Text>
-                <Text variant="caption2" style={{ color: m.from === 'me' ? 'rgba(255,255,255,0.7)' : c.labelSecondary }}>
+                <Text variant="caption2" style={{ color: m.from === 'me' ? c.onDarkSecondary : c.labelSecondary }}>
                   {relativeTime(m.at, lang)}
                 </Text>
               </View>

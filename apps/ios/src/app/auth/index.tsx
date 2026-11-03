@@ -16,7 +16,7 @@ import { useT } from '@/i18n';
 import { flushPendingAuthAction, markAuthSucceeded } from '@/lib/auth';
 import { toLatinDigits } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
-import { useApp, type Session } from '@/store/app';
+import { useApp, type Role, type Session } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
 
 type Step = 'phone' | 'otp' | 'nafath' | 'profile';
@@ -30,7 +30,7 @@ export default function AuthSheet() {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<Session['role']>('investor');
+  const [roles, setRoles] = useState<Role[]>(['investor']);
   const [via, setVia] = useState<Session['via']>('otp');
   const [error, setError] = useState<string | null>(null);
   const [nafathCode] = useState(() => 10 + Math.floor(Math.random() * 89));
@@ -78,7 +78,7 @@ export default function AuthSheet() {
   };
   const onFinish = () => {
     if (name.trim().length < 3) return fail(t('nameError'));
-    signIn({ name: name.trim(), phone: phone || '5XXXXXXXX', role, via });
+    signIn({ name: name.trim(), phone: phone || '5XXXXXXXX', roles: roles.length ? roles : ['investor'], via });
     haptic.success();
     markAuthSucceeded();
     router.back();
@@ -119,7 +119,7 @@ export default function AuthSheet() {
             {error ? (
               <ErrorText>{error}</ErrorText>
             ) : null}
-            <Button title={t('sendCode')} full onPress={onPhone} />
+            <Button title={t('sendCode')} full onPress={onPhone} haptics={false} />
             <View style={styles.orRow}>
               <View style={[styles.line, { backgroundColor: c.separator }]} />
               <Text variant="footnote" color="labelSecondary">
@@ -140,7 +140,7 @@ export default function AuthSheet() {
               {t('otpBody')} (+966 {phone})
             </Text>
             <OtpInput value={otp} onChange={(v) => { setOtp(v); setError(null); }} error={error} />
-            <Button title={t('verify')} full onPress={onOtp} />
+            <Button title={t('verify')} full onPress={onOtp} haptics={false} />
           </Animated.View>
         ) : null}
 
@@ -193,13 +193,20 @@ export default function AuthSheet() {
                     ['investor', 'roleInvestor'],
                     ['owner', 'roleOwner'],
                     ['entrepreneur', 'roleEntre'],
+                    ['partner', 'rolePartner'],
+                    ['provider', 'roleProvider'],
                   ] as const
                 ).map(([r, k]) => (
-                  <Chip key={r} label={t(k)} selected={role === r} onPress={() => setRole(r)} />
+                  <Chip
+                    key={r}
+                    label={t(k)}
+                    selected={roles.includes(r)}
+                    onPress={() => setRoles((prev) => (prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]))}
+                  />
                 ))}
               </View>
             </View>
-            <Button title={t('finish')} full onPress={onFinish} />
+            <Button title={t('finish')} full onPress={onFinish} haptics={false} />
           </Animated.View>
         ) : null}
       </ScrollView>

@@ -48,7 +48,7 @@ export default function Learn() {
             >
               <View style={{ aspectRatio: 16 / 9, backgroundColor: c.fillTertiary }}>
                 <Image source={{ uri: item.thumbnail }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
-                <View style={styles.play}>
+                <View style={[styles.play, { backgroundColor: c.scrimStrong }]}>
                   <Icon name="play.fill" size={22} color="#FFFFFF" />
                 </View>
               </View>
@@ -98,7 +98,7 @@ export default function Learn() {
 
 const styles = StyleSheet.create({
   video: { borderRadius: radii.lg, overflow: 'hidden' },
-  play: { position: 'absolute', alignSelf: 'center', top: '38%', width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
+  play: { position: 'absolute', alignSelf: 'center', top: '38%', width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   article: { flexDirection: 'row', gap: 12, padding: 14, borderRadius: radii.lg, alignItems: 'center' },
   thumb: { width: 84, height: 84, borderRadius: radii.md },
 });

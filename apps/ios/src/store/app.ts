@@ -18,7 +18,8 @@ import { createJSONStorage, persist } from 'zustand/middleware';
  */
 export const DEMO_OWNER_ID = 'u-seller-06';
 
-export type Session = { name: string; phone: string; role: 'investor' | 'owner' | 'entrepreneur'; via: 'otp' | 'nafath'; since: string };
+export type Role = 'investor' | 'owner' | 'entrepreneur' | 'partner' | 'provider';
+export type Session = { name: string; phone: string; roles: Role[]; via: 'otp' | 'nafath'; since: string };
 
 export type Message = { id: string; from: 'me' | 'them'; text: string; at: string };
 
@@ -60,6 +61,8 @@ export type MyListing = {
   id: number;
   type: OpportunityType;
   title: string;
+  /** Everything else entered in the wizard (description, metrics, type-specific fields). */
+  details?: Record<string, string | number | boolean>;
   priceSar: number;
   cityId: CityId;
   categoryId: CategoryId;
@@ -85,6 +88,9 @@ export type ListingDraft = {
   stage?: OpportunityStage;
   extra1: string;
   extra2: string;
+  /** Type-specific: payback months (investment), split + commitment (partner). */
+  extra3: string;
+  extra4: string;
   branches: string;
   employees: string;
   price: string;
@@ -105,6 +111,8 @@ export const emptyDraft = (): ListingDraft => ({
   description: '',
   extra1: '',
   extra2: '',
+  extra3: '',
+  extra4: '',
   branches: '',
   employees: '',
   price: '',
@@ -287,6 +295,15 @@ export const useApp = create<State>()(
     }),
     {
       name: 'forsa-ios-v1',
+      version: 2,
+      // v1 sessions had a single `role`; v2 has `roles` (multi-select, US-AUTH-04).
+      migrate: (persisted, version) => {
+        const st = persisted as { session?: (Partial<Session> & { role?: Role }) | null };
+        if (version < 2 && st.session && !st.session.roles) {
+          st.session = { ...st.session, roles: st.session.role ? [st.session.role] : ['investor'] } as Session;
+        }
+        return st as unknown as State;
+      },
       storage: createJSONStorage(() => AsyncStorage),
       partialize: ({ hydrated: _h, lastPublishedId: _p, ...rest }) => rest,
       onRehydrateStorage: () => () => {

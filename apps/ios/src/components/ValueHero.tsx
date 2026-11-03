@@ -2,7 +2,9 @@ import { brandSource, motion } from '@forsa/tokens';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useIsFocused } from 'expo-router';
 import Animated, {
+  cancelAnimation,
   Easing,
   FadeInDown,
   useAnimatedReaction,
@@ -16,6 +18,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useT } from '@/i18n';
+import { useTheme } from '@/theme';
 
 import { Text } from './Text';
 
@@ -28,21 +31,34 @@ const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
  */
 export function ValueHero({ totalSar, children }: { totalSar: number; children?: React.ReactNode }) {
   const { t, lang } = useT();
+  const { c } = useTheme();
   const reduced = useReducedMotion();
   const target = totalSar / 1e9;
   const value = useSharedValue(reduced ? target : 0);
   const [display, setDisplay] = useState(reduced ? target : 0);
   const drift = useSharedValue(0);
 
+  // Counter rolls up once.
   useEffect(() => {
     if (reduced) {
+      cancelAnimation(value);
       value.value = target;
       setDisplay(target);
       return;
     }
     value.value = withDelay(250, withTiming(target, { duration: motion.duration.cinematic, easing: Easing.out(Easing.cubic) }));
+  }, [reduced, target, value]);
+
+  // Ambient drift runs only while Discover is focused and Reduce Motion is off.
+  const focused = useIsFocused();
+  useEffect(() => {
+    if (reduced || !focused) {
+      cancelAnimation(drift);
+      return;
+    }
     drift.value = withRepeat(withTiming(1, { duration: 9000, easing: Easing.inOut(Easing.sin) }), -1, true);
-  }, [reduced, target, value, drift]);
+    return () => cancelAnimation(drift);
+  }, [reduced, focused, drift]);
 
   useAnimatedReaction(
     () => Math.round(value.value * 100) / 100,
@@ -64,15 +80,15 @@ export function ValueHero({ totalSar, children }: { totalSar: number; children?:
 
   return (
     <View style={styles.hero}>
-      <LinearGradient colors={[brandSource.navy, '#0F1838']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+      <LinearGradient colors={[c.navy, c.navyDeep]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
       <AnimatedGradient
-        colors={['rgba(2,117,217,0.85)', 'rgba(2,117,217,0)']}
+        colors={[c.glowPrimary, c.glowPrimaryClear]}
         style={[styles.glow, { top: -80, end: -60 }, glowA]}
         start={{ x: 0.5, y: 0.5 }}
         end={{ x: 1, y: 1 }}
       />
       <AnimatedGradient
-        colors={['rgba(78,167,223,0.6)', 'rgba(78,167,223,0)']}
+        colors={[c.glowAccent, c.glowAccentClear]}
         style={[styles.glow, { bottom: -120, start: -80, width: 300, height: 300 }, glowB]}
         start={{ x: 0.5, y: 0.5 }}
         end={{ x: 0, y: 0 }}
@@ -96,7 +112,7 @@ export function ValueHero({ totalSar, children }: { totalSar: number; children?:
           </Text>
           <Text style={[styles.unit, { color: brandSource.accent }]}>{lang === 'en' ? 'B' : ' مليار ر.س'}</Text>
         </View>
-        <Text variant="subhead" style={{ color: 'rgba(255,255,255,0.75)' }}>
+        <Text variant="subhead" style={{ color: c.onDarkSecondary }}>
           {t('heroValueLabel')} · {t('heroAsOf')}
         </Text>
         {children}

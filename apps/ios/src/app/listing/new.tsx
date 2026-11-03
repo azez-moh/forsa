@@ -1,5 +1,5 @@
 import { categories, cities, OpportunityType, type CategoryId, type CityId, type OpportunityStage } from '@forsa/data';
-import { radii } from '@forsa/tokens';
+import { brandSource, opportunityTypes, radii } from '@forsa/tokens';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -23,7 +23,8 @@ import { emptyDraft, useApp, type ListingDraft } from '@/store/app';
 import { MARGIN, useTheme } from '@/theme';
 
 const STEPS: StringKey[] = ['stType', 'stBasics', 'stFinancials', 'stMedia', 'stReview'];
-const PHOTO_TINTS = ['#0275D9', '#17234F', '#4EA7DF', '#5E6AD2', '#B5577A', '#0262B8'];
+// Mock photo placeholders tinted with brand and type colours from @forsa/tokens.
+const PHOTO_TINTS = [brandSource.primary, brandSource.navy, brandSource.accent, opportunityTypes.partner.color, opportunityTypes.investor.color, brandSource.accentText];
 
 /**
  * S05 Add opportunity wizard: type → basics → financials → media → review → publish.
@@ -61,6 +62,13 @@ export default function AddWizard() {
   const isIdea = d.type === OpportunityType.InvestorForIdea;
   const isSale = d.type === OpportunityType.ForSale;
   const isPartner = d.type === OpportunityType.PartnerSearch;
+
+  // Quality flags shown at review (US-LST-05 / US-ADM-01). Soft: they never block publishing.
+  const qualityFlags: StringKey[] = [];
+  if (d.photos.length === 0) qualityFlags.push('qfNoPhotos');
+  if (d.description.trim().length < 40) qualityFlags.push('qfShortDescription');
+  if (!isIdea && !d.revenue && !d.margin) qualityFlags.push('qfNoFinancials');
+  if (d.ndaRequired && d.files.length === 0) qualityFlags.push('qfNoNdaFiles');
 
   const validate = (step: number): Record<string, string> => {
     const e: Record<string, string> = {};
@@ -108,6 +116,24 @@ export default function AddWizard() {
         priceSar: price,
         cityId: d.cityId ?? 'riyadh',
         categoryId: d.categoryId ?? 'other',
+        details: {
+          description: d.description,
+          stage: d.stage ?? '',
+          extra1: d.extra1,
+          extra2: d.extra2,
+          extra3: d.extra3,
+          extra4: d.extra4,
+          branches: d.branches,
+          employees: d.employees,
+          negotiable: d.negotiable,
+          equity: d.equity,
+          margin: d.margin,
+          revenue: d.revenue,
+          photos: d.photos.length,
+          cover: d.cover,
+          ndaRequired: d.ndaRequired,
+          files: d.files.join(', '),
+        },
       });
       haptic.success();
       router.back();
@@ -206,11 +232,18 @@ export default function AddWizard() {
               </Group>
               {/* Type-specific fields (US-LST-02) */}
               {isSale ? <Field label={t('reasonForSale')} value={d.extra1} onChangeText={(v) => set({ extra1: v })} /> : null}
-              {d.type === OpportunityType.Investment ? <Field label={t('useOfFunds')} value={d.extra1} onChangeText={(v) => set({ extra1: v })} /> : null}
+              {d.type === OpportunityType.Investment ? (
+                <>
+                  <Field label={t('useOfFunds')} value={d.extra1} onChangeText={(v) => set({ extra1: v })} />
+                  <Field label={t('paybackLabel')} value={d.extra3} onChangeText={(v) => set({ extra3: v })} keyboardType="number-pad" />
+                </>
+              ) : null}
               {isPartner ? (
                 <>
                   <Field label={t('roleSought')} value={d.extra1} onChangeText={(v) => set({ extra1: v })} />
                   <Field label={t('whatIBring')} value={d.extra2} onChangeText={(v) => set({ extra2: v })} />
+                  <Field label={t('proposedSplit')} value={d.extra3} onChangeText={(v) => set({ extra3: v })} placeholder="60 / 40" />
+                  <Field label={t('commitment')} value={d.extra4} onChangeText={(v) => set({ extra4: v })} />
                 </>
               ) : null}
               {isIdea ? (
@@ -234,7 +267,7 @@ export default function AddWizard() {
           {d.step === 2 ? (
             <>
               <Field
-                label={isSale ? t('priceLabel') : t('investLabel')}
+                label={isSale ? t('priceLabel') : isIdea ? t('askLabel') : t('investLabel')}
                 value={d.price ? Number(parseAmount(d.price)).toLocaleString('en-US') : ''}
                 onChangeText={(v) => set({ price: String(parseAmount(v) || '') })}
                 keyboardType="number-pad"
@@ -243,7 +276,7 @@ export default function AddWizard() {
                 style={{ fontVariant: ['tabular-nums'] }}
               />
               {isSale && price > 0 && price < 10_000 ? (
-                <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,149,0,0.12)' }}>
+                <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: c.warningTint }}>
                   <Icon name="exclamationmark.triangle.fill" size={18} color={c.warning} />
                   <Text variant="subhead" style={{ flex: 1 }}>
                     {t('didYouMean')} {sarFull(price * 1000, lang)}؟
@@ -274,19 +307,34 @@ export default function AddWizard() {
                 <DemoTag />
               </View>
               <Text variant="footnote" color="labelSecondary">
-                {t('photosHint')}
+                {t('photosHint')} · {t('reorderHint')}
               </Text>
               <View style={styles.photos}>
                 {d.photos.map((p, i) => (
                   <ScalePressable
                     key={`${p}-${i}`}
                     onPress={() => set({ cover: i })}
+                    // Long-press moves a photo one place earlier (reorder, US-LST-04).
+                    onLongPress={() => {
+                      if (i === 0) return;
+                      const photos = [...d.photos];
+                      [photos[i - 1], photos[i]] = [photos[i], photos[i - 1]];
+                      haptic.selection();
+                      set({ photos, cover: d.cover === i ? i - 1 : d.cover === i - 1 ? i : d.cover });
+                    }}
+                    accessibilityActions={[{ name: 'moveEarlier', label: t('moveEarlier') }]}
+                    onAccessibilityAction={() => {
+                      if (i === 0) return;
+                      const photos = [...d.photos];
+                      [photos[i - 1], photos[i]] = [photos[i], photos[i - 1]];
+                      set({ photos, cover: d.cover === i ? i - 1 : d.cover === i - 1 ? i : d.cover });
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={`${t('cover')} ${i + 1}`}
                     style={[styles.photo, { borderColor: d.cover === i ? c.primary : 'transparent' }]}
                   >
                     <LinearGradient colors={[PHOTO_TINTS[p % PHOTO_TINTS.length], c.navy]} style={StyleSheet.absoluteFill} />
-                    <Icon name="photo" size={22} color="rgba(255,255,255,0.8)" />
+                    <Icon name="photo" size={22} color={c.onDarkSecondary} />
                     {d.cover === i ? (
                       <View style={styles.coverTag}>
                         <Badge label={t('cover')} tone="primary" />
@@ -338,6 +386,19 @@ export default function AddWizard() {
 
           {d.step === 4 ? (
             <>
+              {qualityFlags.length ? (
+                <Card style={{ gap: 8, backgroundColor: c.warningTint }}>
+                  <Text variant="headline">{t('qualityTitle')}</Text>
+                  {qualityFlags.map((f) => (
+                    <View key={f} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+                      <Icon name="exclamationmark.circle" size={16} color={c.warning} />
+                      <Text variant="subhead" style={{ flex: 1 }}>
+                        {t(f)}
+                      </Text>
+                    </View>
+                  ))}
+                </Card>
+              ) : null}
               <Text variant="footnote" color="labelSecondary" weight="600">
                 {t('preview')}
               </Text>
@@ -396,9 +457,9 @@ export default function AddWizard() {
       <View style={[styles.footer, { paddingBottom: insets.bottom + 8, borderTopColor: c.separator }]}>
         {d.step > 0 ? <Button title={t('back')} variant="gray" onPress={() => go(d.step - 1)} style={{ flex: 1 }} full /> : null}
         {d.step < STEPS.length - 1 ? (
-          <Button title={t('next')} onPress={() => go(d.step + 1)} style={{ flex: 2 }} full />
+          <Button title={t('next')} onPress={() => go(d.step + 1)} haptics={false} style={{ flex: 2 }} full />
         ) : (
-          <Button title={t('publish')} icon="paperplane.fill" onPress={onPublish} style={{ flex: 2 }} full />
+          <Button title={t('publish')} icon="paperplane.fill" onPress={onPublish} haptics={false} style={{ flex: 2 }} full />
         )}
       </View>
     </KeyboardAvoidingView>
@@ -416,7 +477,7 @@ function PreviewCard({ d, price }: { d: ListingDraft; price: number }) {
           style={StyleSheet.absoluteFill}
         />
         <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}>
-          {d.type ? <Icon name={typeSymbol[d.type]} size={40} color={d.photos.length ? 'rgba(255,255,255,0.8)' : c.primary} /> : null}
+          {d.type ? <Icon name={typeSymbol[d.type]} size={40} color={d.photos.length ? c.onDarkSecondary : c.primary} /> : null}
         </View>
       </View>
       <View style={{ padding: 14, gap: 4 }}>

@@ -85,13 +85,37 @@ export const PIPELINE: { key: StringKey; statuses: InquiryStatus[] }[] = [
   { key: 'pClosed', statuses: ['closed-won', 'closed-lost'] },
 ];
 
+/**
+ * Arabic counted noun (P2-14): 1 → singular, 2 → dual, 3–10 → plural, 11+ → singular accusative.
+ * English: singular/plural.
+ */
+type Forms = { one: string; two: string; few: string; many: string; en1: string; enN: string };
+const NOUNS = {
+  opportunity: { one: 'فرصة', two: 'فرصتان', few: 'فرص', many: 'فرصة', en1: 'listing', enN: 'listings' },
+  day: { one: 'يوم', two: 'يومان', few: 'أيام', many: 'يومًا', en1: 'day', enN: 'days' },
+  month: { one: 'شهر', two: 'شهران', few: 'أشهر', many: 'شهرًا', en1: 'month', enN: 'months' },
+} satisfies Record<string, Forms>;
+
+export function countNoun(n: number, noun: keyof typeof NOUNS, lang: Lang): string {
+  const f: Forms = NOUNS[noun];
+  if (lang === 'en') return `${num(n)} ${n === 1 ? f.en1 : f.enN}`;
+  const k = n % 100;
+  if (n === 1) return f.one;
+  if (n === 2) return f.two;
+  if (k >= 3 && k <= 10) return `${num(n)} ${f.few}`;
+  return `${num(n)} ${f.many}`;
+}
+
+/** Gregorian calendar with Western digits in Arabic (ar-SA defaults to Hijri). */
+export const dateLocale = (lang: Lang) => (lang === 'ar' ? 'ar-SA-u-nu-latn-ca-gregory' : 'en-GB');
+
 export const daysSince = (iso: string, now = Date.now()) =>
   Math.max(0, Math.floor((now - new Date(iso).getTime()) / 86_400_000));
 
 export const relativeTime = (iso: string, lang: Lang) => {
   const d = daysSince(iso);
   if (d === 0) return lang === 'ar' ? 'اليوم' : 'today';
-  if (lang === 'ar') return d === 1 ? 'أمس' : `قبل ${d} يوم`;
+  if (lang === 'ar') return d === 1 ? 'أمس' : `قبل ${countNoun(d, 'day', 'ar')}`;
   return d === 1 ? 'yesterday' : `${d}d ago`;
 };
 
