@@ -13,7 +13,7 @@ import { Icon } from '@/components/Icon';
 import { ScalePressable } from '@/components/Pressable';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Text } from '@/components/Text';
-import { Badge, Card, Chip, DemoTag } from '@/components/ui';
+import { Badge, Card, Chip, DemoTag, ErrorText } from '@/components/ui';
 import { useT, type StringKey } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
 import { cityName, parseAmount, priceInWords, sar, sarFull, stageLabel, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
@@ -176,9 +176,7 @@ export default function AddWizard() {
                 );
               })}
               {errors.type ? (
-                <Text variant="footnote" color="danger">
-                  {errors.type}
-                </Text>
+                <ErrorText>{errors.type}</ErrorText>
               ) : null}
             </>
           ) : null}
@@ -384,9 +382,7 @@ export default function AddWizard() {
                 </View>
                 <Button title={t('terms')} variant="plain" size="small" onPress={() => Alert.alert(t('terms'), t('aboutDisclaimer'))} />
                 {errors.agree ? (
-                  <Text variant="footnote" color="danger">
-                    {errors.agree}
-                  </Text>
+                  <ErrorText>{errors.agree}</ErrorText>
                 ) : null}
               </Card>
             </>
@@ -450,9 +446,7 @@ function Group({ label, error, children }: { label: string; error?: string; chil
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{children}</View>
       {error ? (
-        <Text variant="footnote" color="danger">
-          {error}
-        </Text>
+        <ErrorText>{error}</ErrorText>
       ) : null}
     </View>
   );

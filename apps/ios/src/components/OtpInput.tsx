@@ -8,7 +8,7 @@ import { useTheme } from '@/theme';
 
 import { Button } from './Button';
 import { Text } from './Text';
-import { DemoTag } from './ui';
+import { DemoTag, ErrorText } from './ui';
 
 /** 4-digit code with iOS one-time-code autofill and a 60s resend timer. Mock: any 4 digits pass. */
 export function OtpInput({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: string | null }) {
@@ -55,9 +55,7 @@ export function OtpInput({ value, onChange, error }: { value: string; onChange: 
         />
       </Pressable>
       {error ? (
-        <Text variant="footnote" color="danger" align="center">
-          {error}
-        </Text>
+        <ErrorText align="center">{error}</ErrorText>
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
         <DemoTag />

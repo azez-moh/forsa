@@ -2,8 +2,13 @@ import { router } from 'expo-router';
 
 import { useApp } from '@/store/app';
 
-/** Action waiting for sign-in. The auth sheet runs it after a successful sign-in (US-AUTH: gate at the moment of action). */
+/**
+ * Gate at the moment of action (US-AUTH-01): the action waits while the auth sheet is shown and
+ * runs only after the sheet has FULLY dismissed (native-stack `transitionEnd` with closing=true),
+ * so a follow-up presentation (another sheet or Modal) never collides with the dismissal.
+ */
 let pending: (() => void) | null = null;
+let ready = false;
 
 export function requireAuth(action: () => void) {
   if (useApp.getState().session) {
@@ -11,15 +16,19 @@ export function requireAuth(action: () => void) {
     return;
   }
   pending = action;
+  ready = false;
   router.push('/auth');
 }
 
-export function runPendingAuthAction() {
-  const a = pending;
-  pending = null;
-  if (a) setTimeout(a, 350); // after the sheet has dismissed
+/** Called by the auth sheet when sign-in succeeded (just before it dismisses itself). */
+export function markAuthSucceeded() {
+  ready = true;
 }
 
-export function clearPendingAuthAction() {
+/** Called by the auth sheet once its dismissal has finished. Runs the action only after a sign-in. */
+export function flushPendingAuthAction() {
+  const a = ready ? pending : null;
   pending = null;
+  ready = false;
+  a?.();
 }

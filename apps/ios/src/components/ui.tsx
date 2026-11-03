@@ -4,6 +4,7 @@ import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 
 import { useT } from '@/i18n';
+import { announce } from '@/lib/a11y';
 import { MARGIN, useTheme } from '@/theme';
 
 import { Button } from './Button';
@@ -132,7 +133,10 @@ export function EmptyState({ icon, title, body, action, onAction }: { icon: stri
 
 /** Lightweight toast (HUD), auto-dismiss. */
 let pushToast: ((msg: string) => void) | null = null;
-export const toast = (msg: string) => pushToast?.(msg);
+export const toast = (msg: string) => {
+  pushToast?.(msg);
+  announce(msg);
+};
 
 export function ToastHost() {
   const { c } = useTheme();
@@ -205,3 +209,15 @@ const styles = StyleSheet.create({
   toast: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 999 },
   chip: { paddingHorizontal: 14, height: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 });
+
+/** Inline error text that VoiceOver announces when it appears. */
+export function ErrorText({ children, align }: { children: string; align?: 'center' }) {
+  useEffect(() => {
+    announce(children);
+  }, [children]);
+  return (
+    <Text variant="footnote" color="danger" align={align} accessibilityRole="alert">
+      {children}
+    </Text>
+  );
+}

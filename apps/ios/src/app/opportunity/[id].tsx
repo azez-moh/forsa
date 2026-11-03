@@ -23,7 +23,7 @@ import { Icon } from '@/components/Icon';
 import { OpportunityCard } from '@/components/OpportunityCard';
 import { ScalePressable } from '@/components/Pressable';
 import { Text } from '@/components/Text';
-import { Badge, Card, DemoTag, EmptyState, SectionHeader, toast } from '@/components/ui';
+import { Badge, Card, DemoTag, EmptyState, SectionHeader, toast, ErrorText } from '@/components/ui';
 import { useT, type StringKey } from '@/i18n';
 import { categoryName, cityName, daysSince, num, priceInWords, sarFull, stageLabel, typeColor, typeShort, typeSymbol } from '@/lib/format';
 import { biometricGate } from '@/lib/faceid';
@@ -317,9 +317,7 @@ export default function OpportunityDetail() {
                 </ScalePressable>
               ))}
               {gateError ? (
-                <Text variant="footnote" color="danger">
-                  {t('faceIdFailed')}
-                </Text>
+                <ErrorText>{t('faceIdFailed')}</ErrorText>
               ) : null}
               {myInquiry?.ndaSignedAt && !unlocked ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>

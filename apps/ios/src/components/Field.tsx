@@ -1,8 +1,9 @@
 import { radii } from '@forsa/tokens';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { StyleSheet, TextInput, View, type TextInputInstance, type TextInputProps } from 'react-native';
 
 import { useT } from '@/i18n';
+import { announce } from '@/lib/a11y';
 import { useTheme, useType } from '@/theme';
 
 import { Text } from './Text';
@@ -14,6 +15,10 @@ export const Field = forwardRef<TextInputInstance, Props>(function Field({ label
   const { c } = useTheme();
   const type = useType();
   const { lang } = useT();
+  // VoiceOver: speak validation errors as they appear.
+  useEffect(() => {
+    announce(error);
+  }, [error]);
   return (
     <View style={{ gap: 6 }}>
       {label ? (

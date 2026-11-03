@@ -1,5 +1,6 @@
 import { radii } from '@forsa/tokens';
-import { router } from 'expo-router';
+import { router, useNavigation, type NativeStackNavigationProp } from 'expo-router';
+import type { ParamListBase } from 'expo-router/react-navigation';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -10,9 +11,9 @@ import { Icon } from '@/components/Icon';
 import { OtpInput } from '@/components/OtpInput';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Text } from '@/components/Text';
-import { Chip, DemoTag } from '@/components/ui';
+import { Chip, DemoTag, ErrorText } from '@/components/ui';
 import { useT } from '@/i18n';
-import { clearPendingAuthAction, runPendingAuthAction } from '@/lib/auth';
+import { flushPendingAuthAction, markAuthSucceeded } from '@/lib/auth';
 import { toLatinDigits } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp, type Session } from '@/store/app';
@@ -34,8 +35,18 @@ export default function AuthSheet() {
   const [error, setError] = useState<string | null>(null);
   const [nafathCode] = useState(() => 10 + Math.floor(Math.random() * 89));
 
-  // If the sheet is swiped away, drop the pending action.
-  useEffect(() => () => clearPendingAuthAction(), []);
+  // Resume the gated action only after the sheet has fully dismissed (transitionEnd, closing).
+  // Swiping the sheet away without signing in drops it. Unmount is a fallback if the event is missed.
+  const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
+  useEffect(() => {
+    const unsub = navigation.addListener('transitionEnd', (e) => {
+      if (e.data.closing) flushPendingAuthAction();
+    });
+    return () => {
+      unsub();
+      setTimeout(flushPendingAuthAction, 600);
+    };
+  }, [navigation]);
 
   useEffect(() => {
     if (step !== 'nafath') return;
@@ -69,8 +80,8 @@ export default function AuthSheet() {
     if (name.trim().length < 3) return fail(t('nameError'));
     signIn({ name: name.trim(), phone: phone || '5XXXXXXXX', role, via });
     haptic.success();
+    markAuthSucceeded();
     router.back();
-    runPendingAuthAction();
   };
 
   return (
@@ -106,9 +117,7 @@ export default function AuthSheet() {
               </View>
             </View>
             {error ? (
-              <Text variant="footnote" color="danger">
-                {error}
-              </Text>
+              <ErrorText>{error}</ErrorText>
             ) : null}
             <Button title={t('sendCode')} full onPress={onPhone} />
             <View style={styles.orRow}>
