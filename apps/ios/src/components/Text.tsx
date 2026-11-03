@@ -22,7 +22,7 @@ export function Text({ variant = 'body', color = 'labelPrimary', weight, align, 
   const resolved = (c as Record<string, string>)[color] ?? color;
   return (
     <RNText
-      maxFontSizeMultiplier={1.8}
+      maxFontSizeMultiplier={2.4}
       {...rest}
       style={[
         type(variant),

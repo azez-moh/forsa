@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', justifyContent: 'center', paddingVertical: 48, paddingHorizontal: 32, gap: 8 },
   toastWrap: { position: 'absolute', top: 60, left: 0, right: 0, alignItems: 'center', zIndex: 1000 },
   toast: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 18, paddingVertical: 12, borderRadius: 999 },
-  chip: { paddingHorizontal: 14, height: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  chip: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 });
 
 /** Inline error text that VoiceOver announces when it appears. */

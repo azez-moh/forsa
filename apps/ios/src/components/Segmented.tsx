@@ -30,7 +30,7 @@ export function Segmented({
         haptic.selection();
         onChange(e.nativeEvent.selectedSegmentIndex);
       }}
-      style={[{ height: 32 }, style]}
+      style={[{ minHeight: 32 }, style]}
     />
   );
 }

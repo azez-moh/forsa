@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
   bar: { height: 6, borderRadius: 3, overflow: 'hidden' },
   barFill: { height: 6, borderRadius: 3 },
   stepNum: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  miniCard: { width: 170, height: 132, borderRadius: radii.lg, padding: 14, gap: 2 },
+  miniCard: { width: 170, minHeight: 132, borderRadius: radii.lg, padding: 14, gap: 2 },
   consultant: { width: 132, borderRadius: radii.lg, padding: 14, alignItems: 'center', gap: 6 },
   avatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   finalCta: { marginHorizontal: MARGIN, marginTop: 32, padding: 20, borderRadius: radii['2xl'], gap: 4 },

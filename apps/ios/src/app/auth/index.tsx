@@ -208,7 +208,7 @@ export default function AuthSheet() {
 }
 
 const styles = StyleSheet.create({
-  cc: { height: 44, borderRadius: radii.md, paddingHorizontal: 12, justifyContent: 'center' },
+  cc: { minHeight: 44, borderRadius: radii.md, paddingHorizontal: 12, justifyContent: 'center' },
   orRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   line: { flex: 1, height: StyleSheet.hairlineWidth },
   nafathCode: { width: 120, height: 120, borderRadius: 60, borderWidth: 3, alignItems: 'center', justifyContent: 'center' },

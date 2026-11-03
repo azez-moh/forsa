@@ -277,7 +277,7 @@ const ar = {
   myListings: 'فرصي',
   mySaved: 'محفوظاتي',
   myRequests: 'طلباتي',
-  myServices: 'خدماتي ومواعيدي',
+  myServices: 'خدماتي',
   emptyListings: 'لم تضف فرصًا بعد',
   emptySaved: 'لا فرص محفوظة',
   emptyRequests: 'لم ترسل طلبات تواصل بعد',

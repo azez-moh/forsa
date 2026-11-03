@@ -182,7 +182,7 @@ export default function ConsultantProfile() {
 const styles = StyleSheet.create({
   avatar: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center' },
   stats: { flexDirection: 'row', gap: 10, paddingHorizontal: MARGIN, marginTop: 20 },
-  day: { width: 60, height: 72, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  busy: { paddingHorizontal: 14, height: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  day: { minWidth: 60, minHeight: 72, paddingHorizontal: 8, paddingVertical: 8, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  busy: { paddingHorizontal: 14, paddingVertical: 6, minHeight: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   cta: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: MARGIN, paddingTop: 10, borderTopWidth: StyleSheet.hairlineWidth },
 });

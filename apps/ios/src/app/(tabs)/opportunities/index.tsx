@@ -10,7 +10,7 @@ import { Segmented } from '@/components/Segmented';
 import { Text } from '@/components/Text';
 import { EmptyState, toast } from '@/components/ui';
 import { useT } from '@/i18n';
-import { cityName, TYPE_ORDER, typeShort } from '@/lib/format';
+import { cityName, TYPE_ORDER, typeSegment } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { useApp } from '@/store/app';
 import { MARGIN, TAB_BAR_CLEARANCE, useTheme } from '@/theme';
@@ -119,7 +119,7 @@ export default function OpportunitiesScreen() {
         ListHeaderComponent={
           <View style={{ gap: 12, paddingTop: 4, paddingBottom: 2 }}>
             <Segmented
-              values={[t('all'), ...TYPE_ORDER.map((ty) => typeShort(ty, lang))]}
+              values={[t('all'), ...TYPE_ORDER.map((ty) => typeSegment(ty, lang))]}
               index={typeIndex}
               onChange={setTypeIndex}
             />

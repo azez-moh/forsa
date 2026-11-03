@@ -77,6 +77,6 @@ export function OtpInput({ value, onChange, error }: { value: string; onChange: 
 const styles = StyleSheet.create({
   // Boxes read left-to-right in both languages (digits are LTR).
   row: { flexDirection: 'row', direction: 'ltr', justifyContent: 'center', gap: 12 },
-  box: { width: 58, height: 64, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
+  box: { minWidth: 58, minHeight: 64, paddingHorizontal: 6, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
   hidden: { position: 'absolute', opacity: 0.01, width: 1, height: 1 },
 });

@@ -65,7 +65,8 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
         style={[
           styles.base,
           {
-            height: spec.height,
+            minHeight: spec.height,
+            paddingVertical: size === 'small' ? 3 : 6,
             minWidth: size === 'large' ? 88 : 44,
             paddingHorizontal: variant === 'plain' ? 4 : spec.paddingInline,
             borderRadius: radius,
@@ -81,8 +82,9 @@ export function Button({ title, onPress, variant = 'filled', size = 'large', ico
             {icon ? <Icon name={icon} size={spec.iconSize} color={fg[variant]} weight="semibold" /> : null}
             {title ? (
             <Text
-              numberOfLines={1}
-              style={{ fontSize: spec.fontSize, lineHeight: spec.lineHeight + 4, fontWeight: '600', color: fg[variant] }}
+              numberOfLines={size === 'small' ? 1 : 2}
+              maxFontSizeMultiplier={size === 'small' ? 1.6 : 2.2}
+              style={{ fontSize: spec.fontSize, lineHeight: spec.lineHeight + 4, fontWeight: '600', color: fg[variant], textAlign: 'center', flexShrink: 1 }}
             >
               {title}
             </Text>

@@ -25,6 +25,15 @@ export const categoryName = (id: CategoryId, lang: Lang) => getCategory(id)?.nam
 
 /** Short type label with the editorial spelling fix ("استثمارية", not "إستثمارية"). */
 export const typeShort = (type: OpportunityType, lang: Lang) => OPPORTUNITY_TYPE_LABELS[type].short[lang];
+
+/** One-word labels for segmented controls, where 5 segments share ~350pt. */
+const typeTiny: Record<OpportunityType, { ar: string; en: string }> = {
+  [OpportunityType.ForSale]: { ar: 'للبيع', en: 'Sale' },
+  [OpportunityType.Investment]: { ar: 'استثمار', en: 'Invest' },
+  [OpportunityType.PartnerSearch]: { ar: 'شريك', en: 'Partner' },
+  [OpportunityType.InvestorForIdea]: { ar: 'فكرة', en: 'Idea' },
+};
+export const typeSegment = (type: OpportunityType, lang: Lang) => typeTiny[type][lang];
 export const typeLong = (type: OpportunityType, lang: Lang) =>
   lang === 'ar' ? OPPORTUNITY_TYPE_LABELS[type].ar.replace('إستثمارية', 'استثمارية') : OPPORTUNITY_TYPE_LABELS[type].en;
 
