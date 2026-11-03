@@ -28,6 +28,18 @@ jobs:
         run: npm run build -w @forsa/web
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      - name: Build iPhone app browser preview (Expo web export → /app)
+        working-directory: apps/ios
+        env:
+          CI: '1'
+        run: npx expo export --platform web --output-dir dist-web
+      - name: Add app preview under /app
+        run: |
+          rm -rf apps/web/out/app
+          cp -R apps/ios/dist-web apps/web/out/app
+          # The app ships its own 404 page; serve it for unknown /app/* routes via a copy at /app/404.html.
+          cp apps/web/out/app/+not-found.html apps/web/out/app/404.html 2>/dev/null || true
+          touch apps/web/out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/out
