@@ -202,3 +202,117 @@ The build and type-check are clean, there are no broken internal links and no ho
 - **SEO is low by design:** `robots: { index: false }` in `app/layout.tsx` fails `is-crawlable`, which is right for a private pitch.
 - **Best practices** loses points for the blocked remote images and the favicon 404.
 - **Accessibility** loses points for color contrast (P1-2) and heading order (P2-10).
+
+---
+
+## Re-test (2026-11-03, after commits 05cd8f4, b0c41be, 4650038, 6265972)
+
+### Re-test verdict: **Pitch-ready: yes**, with one new P1 to fix first
+
+The P0 and all five P1s are fixed and verified, and every flow still works end to end.
+
+There is **one new P1 regression**: in English mode, the wordmark "Forsa w Tamkeen" renders in a **serif fallback font**. Two items remain partially open:
+- mobile Lighthouse on `/` is 61–72 (target ≥80)
+- two P2s (the sort `<select>` hit area, and a heading skip on `/opportunities/` and `/add/`)
+
+New/remaining counts: P0 0 · P1 1 (new) · P2 5 (2 carried over, 3 new).
+
+**Method.** Same as the first pass. Rebuilt both bundles (`npm run build -w @forsa/web`: 89 pages; `tsc --noEmit`: exit 0). Re-ran the 170-load matrix: 17 routes × 1440/390 × ar/en × light/dark, plus reduced motion. Then ran targeted Playwright scripts, a contrast walk over 16 routes × 2 schemes × 2 locales, the hit-target census, and Lighthouse. Re-test screenshots are in `docs/qa/screens/retest/`.
+
+### Original defects: pass/fail
+
+| ID | Item | Result | Evidence |
+|---|---|---|---|
+| P0-1 | Hero visible under reduced motion | **PASS** | At 1440 and 390 with `reduce`: H1 opacity 1, the minimum opacity of all hero controls is 1, and the stats read 3,782 / 1,228 (no zeros once settled). Reads "2.47 مليار ر.س". `retest/hero_rm_1440.png`, `retest/hero_rm_390.png`, `retest/home_m_ar_light_rm_fold.png` |
+| P1-1 | Hydration #418 in dark mode | **PASS** | 0 page errors and 0 console errors across all 170 loads (ar/en, light/dark, both viewports). The only console line is the expected 404 resource on `/does-not-exist/`. |
+| P1-2 | AA contrast | **PASS (light and dark body text)** | Contrast walk over 16 routes: dark mode ar/en has 0 failures. Light mode's only remaining failures are the small "موثّقة"/"معتمد" badges (see N-P2-1). Lighthouse a11y is **100** on `/` and `/opportunities/1124/`, desktop and mobile. |
+| P1-3 | Owner inquiry on 1124 | **PASS** | Guest on 1124 taps "طلب تواصل", signs in, and lands on `/dashboard/?tab=listings` with the toast "هذه فرصتك، تابعها من لوحتك". No sheet opens. The 1124 CTA is "إدارة الفرصة". A non-owned listing (704) still completes inquiry, NDA, OTP and success, and "طلباتي المرسلة 1" shows in the pipeline (no regression). |
+| P1-4 | Wizard type-specific fields | **PASS** | The numbers step now asks different fields per type:<ul><li>For sale: price, saleReason, revenue, margin, branches, employees, equity, leaseYears</li><li>Investment: price, useOfFunds, equity, payback, roi, revenue</li><li>Partner: price, roleSought, contribution, equity, commitment</li><li>Idea: price, equity, teamSize, traction (no branches, employees or area)</li></ul>Validation fires on empty fields. Review shows the new rows. Publish → auth → dashboard still works. `retest/wizard_type0..3_numbers.png`, `retest/wizard_review_investment.png` |
+| P1-5 | TypeStory real figures, example listing, link, length | **PASS** | Chapters now show platform totals (for sale 389, investment 285) labelled "فرصة على المنصة" plus the source line "بحسب تقرير المنصة لشهر أغسطس 2026". Partner and idea chapters omit the count (no report figure; acceptable). Each chapter has an example listing card (704, 932, 1254, 759) and a "استعرض …" link to the filtered list. The section shrank from 2,925 to 1,856 px. No overlap; 0 long tasks while scrolling. `retest/typestory_1.png`, `retest/typestory_exit.png`, `retest/typestory_m.png` |
+| P2-1 | Hit targets ≥44 | **MOSTLY PASS** | Segmented controls, grid/map toggle, footer links, breadcrumbs, theme toggle and menu button are all ≥44 now. Remaining at 1440: the sort `<select>` on `/opportunities/` (147×34) and the TypeStory "استعرض فرص للبيع" pill (189×41). Mobile: none (apart from the intentionally 1×1 skip link before focus). |
+| P2-2 | Search focus ring | **PASS** | `outline: 3px solid rgba(2,117,217,.5)`, matching the buttons. |
+| P2-3 | Mobile type-control clipping | **PASS** | Edge fade mask, direction-aware for RTL/LTR. `retest/opps_m_typecontrol.png` |
+| P2-4 | Titles per locale | **PASS** | English titles on every static route (for example "Opportunities · Forsa w Tamkeen", "Page not found · Forsa w Tamkeen"). Listing, article and consultant names stay Arabic (data). |
+| P2-5 | Leftover English in Arabic mode | **PASS** | "NDA" became "اتفاقية سرية"; "Business Model" and "Full Stack" are gone. Remaining: SEO, Excel, IFRS (proper terms, fine), "English" toggle label, info@forsh.sa, forsh.sa source link. |
+| P2-6 | Featured grid orphan | **PASS** | 6 cards, a full 3×2 grid. `retest/home_featured.png` |
+| P2-7 | Saudi map outline | **PASS (improved)** | More faithful outline: Gulf coast, Qatar notch, southern border. `retest/home_map.png` |
+| P2-8 | Favicon | **PASS** | `/favicon.ico` 200 `image/x-icon`, plus `icon.svg` and `apple-icon.png` links. |
+| P2-9 | Mobile performance | **FAIL vs ≥80** | `/` mobile scored 61, 72 and 70 across three runs (LCP 1.3–4.2 s, TBT 1.1–1.9 s). Up from 58 but still under 80. Main-thread cost is script evaluation in chunks `513-*.js` (~2.5 s) and `18-*.js` (~1.5 s). `/opportunities/1124/` mobile is 90. Desktop is 98 and 100. |
+| P2-10 | Heading order | **PARTIAL** | Home is fixed (an h2 is added before the carousel h3s). New skips h1 → h3: `/opportunities/` (card titles are h3 with no h2 "results" heading) and `/add/` (step field heading "عنوان الفرصة" is h3). Lighthouse doesn't flag these on the audited pages, so this is minor. |
+
+### Base path build (`NEXT_PUBLIC_BASE_PATH=/forsa`)
+
+**PASS.** I built to `apps/web/out`, copied it into a `forsa/` folder (`<scratch>/qa/bp/forsa`), and served the parent so the site sits at `http://localhost:4174/forsa/`.
+
+- A browser crawl from `/forsa/` reached **83 pages**. There were 0 links outside `/forsa`, 0 failed requests (HTML, JS, CSS, fonts, icons) and 0 page errors.
+- All 8 self-hosted font faces loaded from `/forsa/fonts/`.
+- Icons resolve to `/forsa/favicon.ico`, `/forsa/icon.svg` and `/forsa/apple-icon.png`.
+- `router.push` targets keep the prefix: hero search goes to `/forsa/opportunities/?q=…`, and the owner redirect goes to `/forsa/dashboard/?tab=listings`.
+- A direct deep-link load of `/forsa/articles/buy/` returns 200, and the language toggle works.
+- The static file crawl reported `%5Bid%5D` chunk names as "missing". These are URL-encoded `[id]` folder names, which the server decodes; the browser fetched all of them successfully.
+- The default build (no base path) was rebuilt afterwards, and its links still resolve from the root (0 broken out of 88 hrefs).
+
+### New defects
+
+**N-P1-1. The English wordmark renders in a serif font (regression from the self-hosted fonts)**
+
+| | |
+|---|---|
+| Route | All routes, nav and footer |
+| Viewport | Both |
+| Locale | en |
+| Steps | Switch to English and look at the logo. |
+| Expected | "Forsa w Tamkeen" in a sans-serif (Inter, or Tajawal Latin) at weight 800, like before. |
+| Actual | It renders in the browser's default **serif** (Times-like). The cause:<ul><li>`Logo.tsx` sets `style={{ fontFamily: 'var(--font-tajawal)' }}`.</li><li>`layout.tsx` now defines `--font-tajawal: 'Tajawal'` with **no fallback stack**. Before, next/font's variable carried its fallbacks.</li><li>The self-hosted `tajawal-arabic-*.woff2` files are the Arabic subset only, with no Latin glyphs.</li></ul>This is the most visible brand element in the English demo. |
+| Screenshots | `retest/wordmark_en_m.png`, `retest/opps_m_en_light_fold.png` |
+| Likely file | `apps/web/src/app/layout.tsx`, `FONT_CSS`: set `--font-tajawal:'Tajawal','Inter',system-ui,sans-serif` (and the same for `--font-inter`), or give the wordmark `var(--font-sans)`. |
+| Also check | The `font-[family-name:var(--font-latin)]` uses still resolve, because `--font-latin` keeps its stack. |
+
+**N-P2-1. The "موثّقة"/"Verified" and "معتمد" badges are just under AA in light mode**
+
+| | |
+|---|---|
+| Routes | `/`, `/opportunities/`, `/opportunities/1124/`, `/services/2/`, `/consultants/1/`, `/culture-center/`, `/articles/buy/` |
+| Viewport | Both |
+| Locale | Both |
+| Actual | 12 px success-green text on a 14% green tint measures **3.40–4.07:1** (needs 4.5). |
+| Likely file | `src/components/ui/Badge.tsx` line 9: mix the label more (for example `success 55%` / `label 45%`), or use a darker success-text token. |
+
+**N-P2-2. A few targets are still under 44 px on desktop**
+
+- the sort `<select>` on `/opportunities/` (34 px)
+- the TypeStory "استعرض …" link pill (41 px)
+
+Likely files: `ExploreView.tsx`, `TypeStory.tsx`.
+
+**N-P2-3. Heading skips h1 → h3 on `/opportunities/` and `/add/`**
+
+The results grid has no h2 (`ExploreView.tsx`), and the wizard step heading is h3 (`AddWizard.tsx`).
+
+**Carried over:** P2-9 mobile Lighthouse below 80 on `/` (61–72).
+
+### Re-test passes (regression sweep)
+
+- Build and tsc are clean. No horizontal scroll on any of the 170 loads. RTL/LTR `dir` and `lang` are correct after the toggle and after reload.
+- Buttons still match the Apple spec: md 34 px with 44 px hit-slop, lg 50 px with radius 12, pressed .97/.85, disabled .4, focus ring 3 px at offset 2.
+- Keyboard:
+  - the skip link comes first
+  - every stop shows a focus ring
+  - focus stays inside the sheet
+  - Esc closes it and returns focus to the trigger
+- Flows all pass with no regressions:
+  - explore search, type, filters and map
+  - inquiry, NDA, OTP and pipeline (on 704)
+  - add wizard, publish and dashboard
+  - consultant booking, which appears in requests as "مؤكد"
+- Hero counter shows "2.47 مليار ر.س". The odometer runs on wide screens only, and is plain text on phones and under reduced motion.
+- Lighthouse:
+
+| Page | Preset | Performance | Accessibility | Best practices | SEO |
+|---|---|---|---|---|---|
+| `/` | desktop | 98 | 100 | 96 | 63 |
+| `/` | mobile | 61–72 | 100 | 96 | 63 |
+| `/opportunities/1124/` | desktop | 100 | 100 | 96 | 60 |
+| `/opportunities/1124/` | mobile | 90 | 100 | 96 | 63 |
+
+Best practices only loses points for the blocked `api.forsh.sa` images. SEO is low only because the site is set to `noindex`, which is intended.
