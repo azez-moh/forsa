@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+/*
+ * Colours, radii, elevation and motion come from @forsa/tokens.
+ * They are emitted as --fz-* custom properties by <TokenStyles/> (src/components/layout/TokenStyles.tsx)
+ * for light, dark (prefers-color-scheme) and [data-theme] overrides, then mapped into Tailwind here.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-primary: var(--fz-color-primary);
+  --color-primary-tint: var(--fz-color-primary-tint);
+  --color-on-primary: var(--fz-color-on-primary);
+  --color-accent: var(--fz-color-accent);
+  --color-accent-text: var(--fz-color-accent-text);
+  --color-navy: var(--fz-navy);
+  --color-navy-deep: var(--fz-navy-deep);
+  --color-warm: var(--fz-warm);
+
+  --color-bg: var(--fz-color-bg-primary);
+  --color-bg-2: var(--fz-color-bg-secondary);
+  --color-bg-3: var(--fz-color-bg-tertiary);
+  --color-elevated: var(--fz-color-bg-elevated);
+
+  --color-fill-1: var(--fz-color-fill-primary);
+  --color-fill-2: var(--fz-color-fill-secondary);
+  --color-fill-3: var(--fz-color-fill-tertiary);
+
+  --color-label: var(--fz-color-label-primary);
+  --color-label-2: var(--fz-color-label-secondary);
+  --color-label-3: var(--fz-color-label-tertiary);
+  --color-label-4: var(--fz-color-label-quaternary);
+
+  --color-separator: var(--fz-color-separator);
+  --color-separator-opaque: var(--fz-color-separator-opaque);
+  --color-material: var(--fz-color-material-bar);
+
+  --color-success: var(--fz-color-success);
+  --color-warning: var(--fz-color-warning);
+  --color-danger: var(--fz-color-danger);
+  --color-info: var(--fz-color-info);
+  --color-focus: var(--fz-color-focus-ring);
+
+  --color-type-sale: var(--fz-type-sale);
+  --color-type-investment: var(--fz-type-investment);
+  --color-type-partner: var(--fz-type-partner);
+  --color-type-investor: var(--fz-type-investor);
+
+  --radius-xs: var(--fz-radius-xs);
+  --radius-sm: var(--fz-radius-sm);
+  --radius-md: var(--fz-radius-md);
+  --radius-lg: var(--fz-radius-lg);
+  --radius-xl: var(--fz-radius-xl);
+  --radius-2xl: var(--fz-radius-2xl);
+
+  --shadow-e1: var(--fz-elevation-1);
+  --shadow-e2: var(--fz-elevation-2);
+  --shadow-e3: var(--fz-elevation-3);
+  --shadow-e4: var(--fz-elevation-4);
+
+  --ease-standard: var(--fz-ease-standard);
+  --ease-decelerate: var(--fz-ease-decelerate);
+
+  --font-sans: var(--font-tajawal), var(--font-inter), "SF Arabic", "Geeza Pro", system-ui, sans-serif;
+  --font-latin: var(--font-inter), -apple-system, system-ui, sans-serif;
+
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-padding-top: 72px;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-label);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+  html[lang="en"] body {
+    font-family: var(--font-inter), var(--font-tajawal), -apple-system, system-ui, sans-serif;
+    line-height: 1.45;
+  }
+  ::selection { background: var(--color-primary-tint); }
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  img { max-width: 100%; }
+  input, textarea, select, button { font: inherit; letter-spacing: inherit; }
+  [hidden] { display: none !important; }
+}
+
+/* Apple Dynamic Type mirror (tokens.typography). Arabic tracking stays 0. */
+@utility t-display-xl { font-size: clamp(2.75rem, 6vw + 1rem, 4.5rem); line-height: 1.15; font-weight: 800; }
+@utility t-display-l { font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem); line-height: 1.18; font-weight: 800; }
+@utility t-display-m { font-size: clamp(1.875rem, 3vw + 0.75rem, 2.75rem); line-height: 1.2; font-weight: 700; }
+@utility t-large-title { font-size: 2.125rem; line-height: 1.3; font-weight: 700; }
+@utility t-title1 { font-size: 1.75rem; line-height: 1.32; font-weight: 700; }
+@utility t-title2 { font-size: 1.375rem; line-height: 1.38; font-weight: 700; }
+@utility t-title3 { font-size: 1.25rem; line-height: 1.4; font-weight: 700; }
+@utility t-headline { font-size: 1.0625rem; line-height: 1.5; font-weight: 700; }
+@utility t-body { font-size: 1.0625rem; line-height: 1.65; font-weight: 400; }
+@utility t-callout { font-size: 1rem; line-height: 1.6; font-weight: 400; }
+@utility t-subhead { font-size: 0.9375rem; line-height: 1.55; font-weight: 400; }
+@utility t-footnote { font-size: 0.8125rem; line-height: 1.5; font-weight: 400; }
+@utility t-caption { font-size: 0.75rem; line-height: 1.45; font-weight: 500; }
+
+@utility tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+@utility material-bar {
+  background: var(--color-material);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+@utility material-thick {
+  background: var(--color-material);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+  backdrop-filter: saturate(180%) blur(30px);
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  @media (width >= 48rem) { padding-inline: 32px; }
+  @media (width >= 80rem) { padding-inline: 0; }
+}
+@utility container-read {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+@utility section-gap {
+  padding-block: 64px;
+  @media (width >= 64rem) { padding-block: 112px; }
+}
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+@utility mirror-rtl {
+  &:where([dir="rtl"] *) { transform: scaleX(-1); }
+}
+
+/* View Transitions: card media -> detail hero */
+::view-transition-group(*) {
+  animation-duration: 450ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+::view-transition-old(root), ::view-transition-new(root) {
+  animation-duration: 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
