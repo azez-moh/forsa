@@ -61,7 +61,16 @@ export function listenForNotificationTaps(): () => void {
     const url = resp?.notification.request.content.data?.url;
     if (typeof url === 'string' && url.startsWith('/')) router.push(url as never);
   };
-  Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+  // Cold start from a tapped notification. Clear it once handled, because the native module keeps
+  // the last response for the life of the process and an in-app reload (language switch) would
+  // otherwise reopen the same deep link.
+  Notifications.getLastNotificationResponseAsync()
+    .then((resp) => {
+      if (!resp) return;
+      open(resp);
+      Notifications.clearLastNotificationResponse();
+    })
+    .catch(() => {});
   const sub = Notifications.addNotificationResponseReceivedListener(open);
   return () => sub.remove();
 }
