@@ -325,3 +325,96 @@ After these two fixes, the app is pitch-ready **for the Expo Go path (README Opt
 6. Profile → English: the app reloads to LTR, chevrons flip. Switch back to Arabic.
 7. Settings → Accessibility: Reduce Motion on, Larger Text at AX3, Bold Text, dark mode. Re-run steps 2–4.
 8. If you demo a Release or TestFlight build: cold-launch on an English device and confirm the app gets past the splash (P0-2).
+
+---
+
+## Re-test (2026-11-03, after commits 14645ff … 46be1ba)
+
+I re-ran the same checks as the first pass. I did not change any app code.
+
+- **Build checks.**
+  - `npx tsc --noEmit -p apps/ios`: **Pass**, 0 errors.
+  - `npx expo export --platform ios`: **Pass**, 1,829 modules, 4.4 MB Hermes bundle.
+  - `expo-notifications ~58.1.7` matches the SDK 58 bundled version and is in `package-lock.json`.
+- **Web render.** I copied the current `apps/ios/src`, `app.json`, `package.json` and `packages/` into the scratchpad again and confirmed the copy was identical to the repo. All 11 routes I loaded rendered with no page errors:
+  - `/` (Discover), `/opportunities`, `/opportunity/704` and `/opportunity/1124`. These were the three routes that crashed in the first pass.
+  - `/inquiry/704`, `/inquiry/99999`, `/listing/new`, `/inbox`, `/profile`, `/auth`, `/consultants/1`.
+  - The screenshots show:
+    - rounded, styled cards;
+    - one-word type segments (للبيع · استثمار · شريك · فكرة);
+    - "نُشرت قبل 519 يومًا";
+    - no inbox badge for guests;
+    - Profile's fourth segment now reads "خدماتي";
+    - the bad inquiry id now shows an empty state with a "تم" button.
+
+### P0 and P1
+
+| Item | Result | Notes |
+|---|---|---|
+| P0-1 Card style through `Link asChild` | **Pass** | `StyleSheet.flatten` at `OpportunityCard.tsx:50`. Confirmed in the web render. No other `asChild` children exist, and `Link.AppleZoomTarget` doesn't use `Slot`. |
+| P0-2 Release reload and splash hang | **Pass** (code) | `reload.ts`: `DevSettings.reload()` only under `__DEV__`, otherwise `Updates.reloadAsync()` with no `isEnabled` guard (the native `DisabledAppController.requestRelaunch` recreates the React context). `_layout.tsx:41-44` hides the splash after 2.5 s regardless, and the 250 ms timer is now cleared on cleanup. **Confirm on a device** with a Release build on an English-language iPhone. |
+| P1-1 Demo listing #1124 | **Pass** | Discover filters out the demo owner's listing and puts NDA listings first (`(discover)/index.tsx:25-29`). The README splits the demo into an investor path (#704/#932) and an owner path (#1124). |
+| P1-2 Node version | **Pass** | README now says Node 22.13+ or 24 LTS. |
+| P1-3 README Option B | **Pass** | Covers Developer Mode, Trust, CocoaPods/prebuild, B1 Debug (needs Metro) and B2 `--configuration Release`. The reload note matches the code. `npm start -w @forsa/ios` exists. |
+| P1-4 US-IOS-05 notifications | **Pass** | `enableRemoteNotifications: false`, so the plugin adds no `aps-environment` entitlement and no background mode, and a free Apple ID can still sign the app. Local notifications work in Expo Go on iOS. The explainer shows after the first inquiry, never at launch, and asks for permission only on tap. Notifications are tagged "تجريبي" and deep-link into the app. See also new P2-N2 and P2-N3. |
+| P1-5 Dynamic Type | **Pass**, with a regression (P2-N1) | `Text` caps at 2.4×. Chip, Button, mini-card, day cell, OTP box, busy slot, phone prefix and Segmented use `minHeight`. Large and medium buttons allow 2 lines. **Confirm at AX3 on a device.** |
+| P1-6 Resume after auth sheet | **Pass** (code) | `auth.ts` keeps the pending action and a `ready` flag. The sheet runs the action on native-stack `transitionEnd` with `closing: true`, which fires on `onDisappear` after the dismissal finishes. Unmount after 600 ms is a fallback, and the second flush does nothing. Swiping the sheet away without signing in drops the action. **Confirm on a device:** services request Modal after sign-in, and inquiry → auth → NDA. |
+| P1-7 VoiceOver announcements | **Pass** | `lib/a11y.ts` uses `announceForAccessibilityWithOptions(queue)` on iOS. Toasts and `ErrorText` are announced, and `Field` errors are announced through an effect. |
+
+### P2
+
+| # | Result | Notes |
+|---|---|---|
+| 1 Hex literals → tokens | **Pass** | Tints, glows, scrims and row colors now come from `theme` (derived from `@forsa/tokens`). What's left is `#FFFFFF` on colored fills and iOS systemGray in the theme, which is acceptable. |
+| 2 Navy row icon in dark mode | **Pass** | Uses `rowIndigo` in dark mode. |
+| 3 Swipe icon mirroring | **Pass** | The icon is `directional`. **Confirm the swipe edge in RTL on a device.** |
+| 4 Double haptics | **Pass** | `Button` has a `haptics` prop, and it is turned off on Continue, Verify, Publish, Next, Book, Submit, Grant and Simulate. |
+| 5 Hero drift | **Pass** | Uses `cancelAnimation` and pauses with `useIsFocused`. |
+| 6 Timers after dismissal | **Pass** | The inquiry OTP timer and the thread auto-reply timer are both cleared. |
+| 7 Unknown inquiry id | **Pass** | Shows an empty state with a close button (seen in the render). |
+| 8 Badge for guests | **Pass** | |
+| 9 Request status CTA | **Pass** | Opens `tab=requests`, and the CTA bar shows a status badge. |
+| 10 VoiceOver pipeline actions | **Pass** | `accessibilityActions` for advance, move and decline. |
+| 11 "Verified" in card label | **Pass** | |
+| 12 Segment truncation | **Pass** | |
+| 13 Status bar over hero | **Pass** | Light while over the hero, auto after scrolling past it. |
+| 14 Arabic plurals | **Pass** | `countNoun` handles 1, 2, 3–10 and 11+. |
+| 15 Gregorian dates | **Pass** | `dateLocale` is used everywhere. |
+| 16 Consultant dates | **Pass** | Uses a local date key over a 14-day window (Fri/Sat excluded). |
+| 17 `Intl` on Hermes | **Open** (device only) | |
+| 18 Face ID fallback and switcher blur | **Partial** | The fallback is now documented in the README. The blur in the app switcher still needs a device check. |
+| 19 Auth spec gaps | **Partial** | Save search is now gated and roles are multi-select (5 roles, with a store migration from v1). Nafath is still not required to publish (US-AUTH-03). |
+| 20 Wizard spec gaps | **Pass** | Payback, split/commitment and ask fields. Long-press and VoiceOver reorder. Quality flags. Details are saved on publish. |
+| 21 Investor-type prefill | **Pass** | |
+| 22 README and `app.json` | **Pass** | `npm start` documented, Expo Go note added, duplicate splash config removed. |
+
+### New defects (all P2)
+
+- **P2-N1 · Buttons and chips no longer match the HIG sizes**
+  - **Where:** `components/Button.tsx:70-71`, `components/ui.tsx:210`.
+  - **What's wrong:** `minHeight` plus a fixed `paddingVertical` (3 or 6) plus a line height of `spec.lineHeight + 4` makes buttons taller than the spec at default text size. Measured in the render: small is 30 (spec 28), medium 38 (spec 34). Chips are 36 (spec 34) because Arabic subhead has a 24pt line height plus 12 of padding.
+  - **Fix:** use `paddingVertical: Math.max(0, (spec.height - textLineHeight) / 2)`, or no vertical padding with `minHeight`. That keeps 28/34/50 at default size and still lets them grow.
+- **P2-N2 · The last tapped notification reopens after every in-app reload**
+  - **Where:** `lib/notify.ts:62-64`.
+  - **What's wrong:** `getLastNotificationResponseAsync()` runs on every root mount. The native module keeps the last response for the life of the process, so after a reload (the language switch) the app pushes the old deep link again.
+  - **Fix:** call `Notifications.clearLastNotificationResponse()` after handling it, or remember the handled notification's identifier.
+- **P2-N3 · Possible warning banner in Expo Go**
+  - **What's wrong:** importing `expo-notifications` in Expo Go logs `console.warn('expo-notifications functionality is not fully supported in Expo Go…')`.
+  - **Fix:** if a LogBox banner shows during the demo, add `LogBox.ignoreLogs(['expo-notifications'])` in dev. Confirm on a device.
+- **P2-N4 · Secondary and tertiary text are now nearly the same color**
+  - **Where:** `packages/tokens/src/index.ts:45-46,79-80`.
+  - **What's wrong:** `labelSecondary` and `labelTertiary` are now opaque greys only about 1 contrast step apart (#5E6272 and #6B6E79). The secondary/tertiary hierarchy is mostly gone, and the placeholder color is nearly as dark as body-secondary text. The change also affects `apps/web`.
+  - **Fix:** this is acceptable for AA. If the hierarchy matters, make tertiary lighter and keep it only for non-essential text.
+
+### Re-test verdict
+
+**Pitch-ready for the Expo Go path (README Option A) and for a Release build (B2), subject to the device checks below.** No P0 or P1 defects remain open or are new. There are 4 new P2s. P2-17 is still open, and P2-18 and P2-19 are partly fixed.
+
+What still needs a real iPhone:
+- The Release cold launch on an English-language device (P0-2).
+- The auth-sheet resume into the services Modal (P1-6).
+- AX3 text size (P1-5).
+- The local notification arriving and its deep link in Expo Go.
+- The swipe edge in RTL.
+- The blur in the app switcher.
+- `Intl` output on Hermes.
