@@ -7,6 +7,9 @@ function block(scheme: ColorScheme): string {
   lines.push(`--fz-navy:${brandSource.navy};`);
   lines.push(`--fz-navy-deep:${scheme === 'dark' ? '#0B1230' : '#0E1738'};`);
   lines.push(`--fz-warm:${brandSource.warm};`);
+  // Text-safe semantic text on their own 14–16% tints (QA N-P2-1): light ≥ 4.9:1, dark ≥ 7:1.
+  lines.push(`--fz-success-text:${scheme === 'dark' ? '#4ADE80' : '#146C2E'};`);
+  lines.push(`--fz-warning-text:${scheme === 'dark' ? '#FFB340' : '#9A5200'};`);
   lines.push(`--fz-type-sale:${scheme === 'dark' ? brandSource.primaryDark : opportunityTypes.sale.color};`);
   lines.push(`--fz-type-investment:${scheme === 'dark' ? brandSource.accentDark : opportunityTypes.investment.color};`);
   lines.push(`--fz-type-partner:${opportunityTypes.partner.color};`);

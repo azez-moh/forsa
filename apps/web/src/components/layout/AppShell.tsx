@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { MotionConfig } from 'motion/react';
 import { AppProvider, useApp } from '@/lib/store';
 import { ViewTransitionListener } from '@/lib/viewTransition';
 import { DocumentTitle } from '@/lib/DocumentTitle';
@@ -26,7 +25,7 @@ function SkipLink() {
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <AppProvider>
-      <MotionConfig reducedMotion="user">
+      <>
         <SkipLink />
         <GlassNav />
         <main id="main" tabIndex={-1} className="min-h-[70vh] outline-none">
@@ -38,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Toast />
         <ViewTransitionListener />
         <DocumentTitle />
-      </MotionConfig>
+      </>
     </AppProvider>
   );
 }

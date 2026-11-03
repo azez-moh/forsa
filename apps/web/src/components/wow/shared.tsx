@@ -5,8 +5,7 @@
  * Hydration-safe media-query hooks (server snapshot = false, so the first client render
  * always matches the static HTML and the real value is applied right after hydration).
  */
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
-import { animate, motion, useInView, useMotionValue, useTransform } from 'motion/react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 export type WowLocale = 'ar' | 'en';
 
@@ -115,33 +114,64 @@ export interface CountUpProps {
 /**
  * Number that tweens to `value` once (and re-tweens softly when `value` changes).
  * Renders the start value in static HTML; under reduced motion it jumps to the final value.
+ * Motion-free (requestAnimationFrame + IntersectionObserver) so it can sit above the fold on the
+ * home page without pulling the motion library into the first-load bundle (QA P2-9).
  */
 export function CountUp({ value, duration = 1.2, delay = 0, format = formatInt, startOnView = false, from = 0, className }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const mv = useMotionValue(from);
-  const text = useTransform(mv, (v) => format(v));
-  const inView = useInView(ref, { once: true, amount: 0.5 });
+  const [shown, setShown] = useState(from);
+  const current = useRef(from);
   const started = useRef(false);
+  const [inView, setInView] = useState(!startOnView);
 
   useEffect(() => {
-    if (startOnView && !inView) return;
+    if (!startOnView || inView) return;
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.intersectionRatio >= 0.5 || e.isIntersecting)) {
+        setInView(true);
+        io.disconnect();
+      }
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [startOnView, inView]);
+
+  useEffect(() => {
+    if (!inView) return;
     if (prefersReducedMotionNow()) {
-      mv.set(value);
+      current.current = value;
+      setShown(value);
       return;
     }
     const first = !started.current;
     started.current = true;
-    const controls = animate(mv, value, {
-      duration: first ? duration : 0.45,
-      delay: first ? delay : 0,
-      ease: EASE_OUT,
-    });
-    return () => controls.stop();
-  }, [value, inView, startOnView, duration, delay, mv]);
+    const start = current.current;
+    const dur = (first ? duration : 0.45) * 1000;
+    const wait = (first ? delay : 0) * 1000;
+    let raf = 0;
+    let t0 = 0;
+    // Same curve as EASE_OUT (fast start, long settle).
+    const ease = (x: number) => 1 - Math.pow(1 - x, 4);
+    const tick = (now: number) => {
+      if (!t0) t0 = now + wait;
+      const k = now < t0 ? 0 : Math.min(1, (now - t0) / dur);
+      const v = start + (value - start) * ease(k);
+      current.current = v;
+      setShown(v);
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, inView, duration, delay]);
 
   return (
-    <motion.span ref={ref} className={className} style={{ fontVariantNumeric: 'tabular-nums' }}>
-      {text}
-    </motion.span>
+    <span ref={ref} className={className} style={{ fontVariantNumeric: 'tabular-nums' }}>
+      {format(shown)}
+    </span>
   );
 }

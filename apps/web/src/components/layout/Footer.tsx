@@ -32,7 +32,7 @@ export function Footer() {
   );
   const k = (key: DictKey) => t(key);
   return (
-    <footer className="bg-navy-deep pb-28 text-white md:pb-0" style={{ background: 'var(--fz-navy-deep)' }}>
+    <footer className="cv-auto bg-navy-deep pb-28 text-white [contain-intrinsic-size:auto_640px] md:pb-0" style={{ background: 'var(--fz-navy-deep)' }}>
       <div className="container-page grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="max-w-sm">
           <Wordmark label={t('brand')} onDark />

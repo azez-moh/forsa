@@ -38,6 +38,8 @@
   --color-material: var(--fz-color-material-bar);
 
   --color-success: var(--fz-color-success);
+  --color-success-text: var(--fz-success-text);
+  --color-warning-text: var(--fz-warning-text);
   --color-warning: var(--fz-color-warning);
   --color-danger: var(--fz-color-danger);
   --color-info: var(--fz-color-info);
@@ -145,6 +147,12 @@
   margin-inline: auto;
   padding-inline: 20px;
 }
+/* Below-the-fold sections skip layout/paint until near the viewport (QA P2-9: mobile main-thread time). */
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 @utility section-gap {
   padding-block: 64px;
   @media (width >= 64rem) { padding-block: 112px; }

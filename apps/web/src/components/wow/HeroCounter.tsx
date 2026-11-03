@@ -2,16 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import {
-  motion,
-  useMotionTemplate,
-  useMotionValue,
-  useScroll,
-  useSpring,
-  useTransform,
-} from 'motion/react';
-import {
   CountUp,
-  EASE_OUT,
   compactSar,
   compactSarText,
   formatInt,
@@ -20,6 +11,12 @@ import {
   usePrefersReducedMotion,
   type WowLocale,
 } from './shared';
+
+/*
+ * Motion-library-free by design (QA P2-9): the hero is above the fold on every device, so its entrance,
+ * parallax, glow and odometer use CSS keyframes/transitions and CSS variables only. That keeps the
+ * `motion` package out of the home page's first-load JavaScript.
+ */
 
 export interface HeroCounterProps {
   totalValueSar: number;
@@ -57,7 +54,18 @@ const HERO_CSS = `
 .fz-aurora-b { animation: fz-aurora-b 28s ease-in-out infinite; }
 .fz-aurora-c { animation: fz-aurora-c 34s ease-in-out infinite; }
 .fz-grain { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 160px 160px; }
-@media (prefers-reduced-motion: reduce) { .fz-aurora-a, .fz-aurora-b, .fz-aurora-c { animation: none; } }
+@keyframes fz-enter { from { opacity: var(--fz-enter-from, 0); transform: translate3d(0,18px,0); } to { opacity: 1; transform: none; } }
+.fz-enter { animation: fz-enter .9s cubic-bezier(.16,1,.3,1) both; animation-delay: var(--fz-delay, 0s); }
+.fz-enter-slide { --fz-enter-from: 1; }
+.fz-reel { transition: transform var(--fz-dur, 1.2s) cubic-bezier(.12,.9,.25,1) var(--fz-d, .35s); }
+.fz-parallax { transform: translate3d(0, calc(var(--fz-p, 0) * var(--fz-k, 0px)), 0); }
+.fz-hero-content { transform: translate3d(0, calc(var(--fz-p, 0) * -120px), 0) scale(calc(1 - var(--fz-p, 0) * .04)); opacity: calc(1 - var(--fz-p, 0) * 1.43); }
+@media (prefers-reduced-motion: reduce) {
+  .fz-aurora-a, .fz-aurora-b, .fz-aurora-c { animation: none; }
+  .fz-enter { animation: none; }
+  .fz-reel { transition: none; }
+  .fz-parallax, .fz-hero-content { transform: none; opacity: 1; }
+}
 @media (max-width: 767px) {
   /* Mobile performance (QA P2-9): one static aurora layer, no infinite blur animations. */
   .fz-aurora { filter: blur(48px); animation: none !important; }
@@ -77,16 +85,16 @@ function OdometerDigit({ digit, index, total, animateIn }: { digit: number; inde
   const target = laps * 10 + digit;
   return (
     <span className="relative inline-block h-[1em] overflow-hidden align-top" style={{ width: '0.62em' }}>
-      <motion.span
-        className="absolute inset-x-0 top-0 flex flex-col items-center"
-        initial={false}
-        animate={{ y: animateIn ? `-${target}em` : '0em' }}
-        transition={
-          animateIn
-            ? { duration: 1.2 + index * 0.12, delay: 0.35 + fromEnd * 0.02, ease: [0.12, 0.9, 0.25, 1] }
-            : { duration: 0 }
+      <span
+        className="fz-reel absolute inset-x-0 top-0 flex flex-col items-center"
+        style={
+          {
+            lineHeight: 1,
+            transform: `translate3d(0, ${animateIn ? -target : 0}em, 0)`,
+            '--fz-dur': `${1.2 + index * 0.12}s`,
+            '--fz-d': `${0.35 + fromEnd * 0.02}s`,
+          } as React.CSSProperties
         }
-        style={{ lineHeight: 1 }}
       >
         {[0, 1, 2].flatMap((lap) =>
           DIGITS.map((d) => (
@@ -95,7 +103,7 @@ function OdometerDigit({ digit, index, total, animateIn }: { digit: number; inde
             </span>
           )),
         )}
-      </motion.span>
+      </span>
     </span>
   );
 }
@@ -183,41 +191,48 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
   const reduce = usePrefersReducedMotion();
   const fine = useFinePointer();
   const sectionRef = useRef<HTMLElement>(null);
-
-  // Scroll parallax: content drifts up and fades as the hero leaves the viewport.
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -120]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, reduce ? 1 : 0]);
-  const contentScale = useTransform(scrollYProgress, [0, 1], [1, reduce ? 1 : 0.96]);
-  const skylineY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 60]);
-  const auroraY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 140]);
-
-  // Pointer-reactive glow (desktop only).
-  const px = useMotionValue(50);
-  const py = useMotionValue(40);
-  const gx = useSpring(px, { stiffness: 60, damping: 20 });
-  const gy = useSpring(py, { stiffness: 60, damping: 20 });
-  const glow = useMotionTemplate`radial-gradient(640px circle at ${gx}% ${gy}%, rgba(78,167,223,0.16), transparent 60%)`;
   const glowEnabled = fine && !reduce;
+
+  // Scroll parallax: one passive listener writes the hero's scroll progress (0..1) to a CSS variable.
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || reduce) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const h = el.offsetHeight || 1;
+      const p = Math.min(1, Math.max(0, window.scrollY / h));
+      el.style.setProperty('--fz-p', p.toFixed(4));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [reduce]);
+
+  // Pointer-reactive glow (desktop only), eased by a CSS transition on the variables' consumer.
   const onPointerMove = (e: PointerEvent<HTMLElement>) => {
     if (!glowEnabled || e.pointerType !== 'mouse') return;
     const r = e.currentTarget.getBoundingClientRect();
-    px.set(((e.clientX - r.left) / r.width) * 100);
-    py.set(((e.clientY - r.top) / r.height) * 100);
+    e.currentTarget.style.setProperty('--fz-gx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+    e.currentTarget.style.setProperty('--fz-gy', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
   };
 
   const value = compactSar(totalValueSar, loc);
   const fullValueText = compactSarText(totalValueSar, loc);
 
   /**
-   * Entrance props. Under reduced motion the elements still animate to their final state, with duration 0:
-   * the static HTML is rendered with the hidden initial state (the server cannot know the preference), so
-   * returning `initial: false` without `animate` would leave them at opacity 0 (QA P0-1).
+   * Entrance: CSS keyframe with a per-element delay. Under reduced motion the animation is off and the
+   * elements render in their final state (QA P0-1). The H1 (LCP) slides in but is never transparent.
    */
   const enter = (delay: number, fade = true) => ({
-    initial: fade ? { opacity: 0, y: 18 } : { y: 14 },
-    animate: { opacity: 1, y: 0 },
-    transition: reduce ? { duration: 0 } : { duration: 0.9, delay, ease: EASE_OUT },
+    className: fade ? 'fz-enter' : 'fz-enter fz-enter-slide',
+    style: { '--fz-delay': `${delay}s` } as React.CSSProperties,
   });
 
   return (
@@ -243,7 +258,7 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
       />
 
       {/* Aurora mesh in brand blues */}
-      <motion.div aria-hidden className="absolute inset-0 -z-20 opacity-90" style={{ y: auroraY }}>
+      <div aria-hidden className="fz-parallax absolute inset-0 -z-20 opacity-90" style={{ '--fz-k': '140px' } as React.CSSProperties}>
         <div
           className="fz-aurora fz-aurora-a"
           style={{
@@ -274,19 +289,25 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
             background: 'radial-gradient(closest-side, rgba(40,72,170,0.45), rgba(40,72,170,0) 70%)',
           }}
         />
-      </motion.div>
+      </div>
 
       {/* Pointer glow */}
-      {glowEnabled && <motion.div aria-hidden className="pointer-events-none absolute inset-0 -z-10" style={{ backgroundImage: glow }} />}
+      {glowEnabled && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{ backgroundImage: 'radial-gradient(640px circle at var(--fz-gx, 50%) var(--fz-gy, 40%), rgba(78,167,223,0.16), transparent 60%)' }}
+        />
+      )}
 
       {/* Skyline */}
-      <motion.div
+      <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[26vh] min-h-[140px] text-[#4EA7DF] opacity-[0.12] md:h-[34vh]"
-        style={{ y: skylineY }}
+        className="fz-parallax pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[26vh] min-h-[140px] text-[#4EA7DF] opacity-[0.12] md:h-[34vh]"
+        style={{ '--fz-k': '60px' } as React.CSSProperties}
       >
         <Skyline />
-      </motion.div>
+      </div>
 
       {/* Horizon hairline + bottom fade into the page */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-32" style={{ background: 'linear-gradient(to bottom, transparent, rgba(7,12,34,0.7))' }} />
@@ -295,19 +316,15 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
       <div aria-hidden className="fz-grain pointer-events-none absolute inset-0 -z-10 opacity-[0.07] mix-blend-overlay" />
 
       {/* Content */}
-      <motion.div
-        className="relative mx-auto flex w-full max-w-5xl flex-col items-center px-6 pb-24 pt-32 text-center md:pb-32 md:pt-40"
-        style={{ y: contentY, opacity: contentOpacity, scale: contentScale }}
-      >
-        <motion.h1
-          {...enter(0.05, false)}
-          className="text-balance font-extrabold leading-[1.15] text-white"
-          style={{ fontSize: 'clamp(2.5rem, 7vw, 5.25rem)', letterSpacing: locale === 'en' ? '-0.025em' : 0 }}
+      <div className="fz-hero-content relative mx-auto flex w-full max-w-5xl flex-col items-center px-6 pb-24 pt-32 text-center md:pb-32 md:pt-40">
+        <h1
+          className={`${enter(0.05, false).className} text-balance font-extrabold leading-[1.15] text-white`}
+          style={{ ...enter(0.05, false).style, fontSize: 'clamp(2.5rem, 7vw, 5.25rem)', letterSpacing: locale === 'en' ? '-0.025em' : 0 }}
         >
           {t.headline}
-        </motion.h1>
+        </h1>
 
-        <motion.div {...enter(0.2)} className="mt-12 flex flex-col items-center md:mt-16">
+        <div className={`${enter(0.2).className} mt-12 flex flex-col items-center md:mt-16`} style={enter(0.2).style}>
           <p className="sr-only">
             {t.valueLabel}: {fullValueText}
           </p>
@@ -326,20 +343,20 @@ export function HeroCounter({ totalValueSar, users, opportunities, locale, child
           <p aria-hidden className="mt-4 text-base font-medium text-white/60 md:text-lg">
             {t.valueLabel}
           </p>
-        </motion.div>
+        </div>
 
-        <motion.dl {...enter(0.35)} className="mt-10 flex items-center gap-8 md:mt-12 md:gap-12">
+        <dl className={`${enter(0.35).className} mt-10 flex items-center gap-8 md:mt-12 md:gap-12`} style={enter(0.35).style}>
           <Stat value={users} label={t.users} />
           <span aria-hidden className="h-8 w-px bg-white/15" />
           <Stat value={opportunities} label={t.opportunities} />
-        </motion.dl>
+        </dl>
 
         {children && (
-          <motion.div {...enter(0.5)} className="mt-12 flex flex-wrap items-center justify-center gap-3 md:mt-14">
+          <div className={`${enter(0.5).className} mt-12 flex flex-wrap items-center justify-center gap-3 md:mt-14`} style={enter(0.5).style}>
             {children}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     </section>
   );
 }

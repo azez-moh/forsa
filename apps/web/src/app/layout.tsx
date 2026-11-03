@@ -22,7 +22,8 @@ const FONT_CSS = [
   face('Inter', 'inter-latin-500-normal', 500),
   face('Inter', 'inter-latin-600-normal', 600),
   face('Inter', 'inter-latin-700-normal', 700),
-  `:root{--font-tajawal:'Tajawal';--font-inter:'Inter';}`,
+  // Full fallback stacks (QA N-P1-1): the Tajawal files are the Arabic subset, so Latin falls through to Inter/system sans.
+  `:root{--font-tajawal:'Tajawal','Inter',system-ui,-apple-system,'Segoe UI','SF Arabic','Geeza Pro','Noto Sans Arabic',sans-serif;--font-inter:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;}`,
 ].join('');
 const PRELOAD = ['tajawal-arabic-800-normal', 'tajawal-arabic-500-normal'];
 

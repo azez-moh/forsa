@@ -1,8 +1,6 @@
 'use client';
 
-import { useId, useRef, type KeyboardEvent } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
-import { motion as motionTokens } from '@forsa/tokens';
+import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { cn } from '@/lib/cn';
 
 export interface Segment<V extends string> {
@@ -33,9 +31,24 @@ export function SegmentedControl<V extends string>({
   className?: string;
   scroll?: boolean;
 }) {
-  const id = useId();
-  const reduce = useReducedMotion();
   const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const track = useRef<HTMLDivElement>(null);
+  // Thumb geometry is measured from the active segment and moved with a CSS transition (spring-like
+  // curve). No layout-projection library, so the control stays out of the motion bundle (QA P2-9).
+  const [thumb, setThumb] = useState<{ x: number; w: number } | null>(null);
+  const activeIndex = segments.findIndex((s) => s.value === value);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = refs.current[activeIndex];
+      const tr = track.current;
+      if (!el || !tr) return;
+      setThumb({ x: el.offsetLeft, w: el.offsetWidth });
+    };
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro && track.current) ro.observe(track.current);
+    return () => ro?.disconnect();
+  }, [activeIndex, segments.length]);
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const idx = segments.findIndex((s) => s.value === value);
@@ -52,8 +65,6 @@ export function SegmentedControl<V extends string>({
     refs.current[next]?.focus();
   };
 
-  const spring = motionTokens.spring.snappy.web;
-
   return (
     <div
       className={cn(
@@ -64,11 +75,20 @@ export function SegmentedControl<V extends string>({
       )}
     >
       <div
+        ref={track}
         role="radiogroup"
         aria-label={label}
         onKeyDown={onKey}
         className={cn('relative inline-flex w-max min-w-full items-stretch rounded-full bg-fill-3 p-[3px] md:min-w-0', size === 'sm' ? 'h-9' : 'h-[50px]')}
       >
+        {thumb && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-[3px] z-0 rounded-full bg-bg shadow-[0_3px_8px_rgba(0,0,0,0.12),0_3px_1px_rgba(0,0,0,0.04)] transition-[transform,width] duration-[350ms] ease-[cubic-bezier(0.32,1.25,0.5,1)] motion-reduce:transition-none dark:bg-[#636366]"
+            // offsetLeft is a measured physical offset, so the thumb is positioned from the physical left in both directions.
+            style={{ left: 0, width: thumb.w, transform: `translate3d(${thumb.x}px,0,0)` }}
+          />
+        )}
         {segments.map((s, i) => {
           const active = s.value === value;
           return (
@@ -83,20 +103,12 @@ export function SegmentedControl<V extends string>({
               tabIndex={active ? 0 : -1}
               onClick={() => onChange(s.value)}
               className={cn(
-                "relative z-0 flex min-w-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-bold transition-colors duration-200 before:absolute before:inset-x-0 before:content-['']",
+                "relative z-[1] flex min-w-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-bold transition-colors duration-200 before:absolute before:inset-x-0 before:content-['']",
                 size === 'sm' ? 'before:-inset-y-[7px]' : 'before:inset-y-0',
                 size === 'sm' ? 'text-[13px]' : 'text-[15px]',
                 active ? 'text-label' : 'text-label-2 hover:text-label',
               )}
             >
-              {active && (
-                <motion.span
-                  layoutId={`seg-thumb-${id}`}
-                  aria-hidden
-                  className="absolute inset-0 -z-10 rounded-full bg-bg shadow-[0_3px_8px_rgba(0,0,0,0.12),0_3px_1px_rgba(0,0,0,0.04)] dark:bg-[#636366]"
-                  transition={reduce ? { duration: 0.15 } : { type: 'spring', stiffness: spring.stiffness, damping: spring.damping, mass: spring.mass }}
-                />
-              )}
               <span>{s.label}</span>
               {typeof s.count === 'number' && <span className="tabular text-[12px] font-medium text-label-2">{s.count}</span>}
             </button>

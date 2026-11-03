@@ -297,8 +297,8 @@ export function AddWizard() {
               >
                 {step === 0 && (
                   <fieldset>
-                    <legend id="step-h-0" className="t-title2 mb-6">
-                      {t('chooseType')}
+                    <legend id="step-h-0" className="mb-6">
+                      <h2 className="t-title2">{t('chooseType')}</h2>
                     </legend>
                     <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label={t('chooseType')}>
                       {TYPE_ORDER.map((ty) => {
@@ -496,7 +496,7 @@ export function AddWizard() {
         {/* Live preview (desktop) */}
         <aside className="hidden lg:block" aria-label={t('reviewTitle')}>
           <div className="sticky top-28">
-            <p className="mb-3 text-[13px] font-bold text-label-2">{t('reviewTitle')}</p>
+            <h2 className="mb-3 text-[13px] font-bold text-label-2">{t('reviewTitle')}</h2>
             <div className="pointer-events-none" aria-hidden inert>
               <OpportunityCard o={preview} preview />
             </div>

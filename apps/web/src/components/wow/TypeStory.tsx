@@ -166,7 +166,7 @@ function StoryCardContent({ item, locale, total, index, countOnView = false }: {
       <div className="mt-auto pt-6">
         <Link
           href={item.href}
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-bold text-[#17234F] transition-[filter] hover:brightness-95 focus-visible:outline-white/80"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-[15px] font-bold text-[#17234F] transition-[filter] hover:brightness-95 focus-visible:outline-white/80"
         >
           {t.browse} {name}
           <Arrow />
