@@ -140,30 +140,41 @@ const K = {
   theme: 'forsa.theme',
   user: 'forsa.user',
   saved: 'forsa.saved',
-  pipeline: 'forsa.pipeline.v1',
+  pipeline: 'forsa.pipeline.v2',
   listings: 'forsa.listings.v1',
   requests: 'forsa.requests.v1',
   searches: 'forsa.searches.v1',
 } as const;
 
-/** Seed the pipeline from @forsa/data so the dashboard is never empty in a demo. */
+/**
+ * Seed the received pipeline for the demo persona, who owns listing #1124 (DEMO_OWNED_OPPORTUNITIES).
+ * The first card is the real seeded inquiry from @forsa/data; the others are fictional, spread across
+ * stages so the kanban reads well. Inquiries the user sends from S04 are added as `sent`.
+ */
 function seedPipeline(): PipelineInquiry[] {
-  const names: Record<string, string> = {
-    'u-investor-01': 'سارة (مستثمرة)',
-    'u-investor-02': 'شركة أفق القابضة',
-    'u-investor-03': 'خالد (مستثمر ملائكي)',
-  };
-  return seedInquiries.map((i) => ({
-    id: i.id,
-    opportunityId: i.opportunityId,
-    direction: 'received' as const,
-    counterpart: names[i.fromUserId] ?? i.fromUserId,
-    message: i.message,
-    budgetSar: i.investmentBudgetSar,
-    status: i.status,
-    createdAt: i.createdAt,
-    updatedAt: i.updatedAt,
-  }));
+  const seed = seedInquiries.find((i) => i.opportunityId === 1124);
+  const base: PipelineInquiry[] = [];
+  if (seed) {
+    base.push({
+      id: seed.id,
+      opportunityId: 1124,
+      direction: 'received',
+      counterpart: 'شركة أفق القابضة',
+      message: seed.message,
+      budgetSar: seed.investmentBudgetSar,
+      status: seed.status,
+      signedName: 'شركة أفق القابضة',
+      signedAt: seed.updatedAt,
+      createdAt: seed.createdAt,
+      updatedAt: seed.updatedAt,
+    });
+  }
+  const extra: Array<Omit<PipelineInquiry, 'opportunityId' | 'direction'>> = [
+    { id: 'demo-r1', counterpart: 'سارة (مستثمرة)', message: 'أرغب في معرفة عدد الأطفال المسجلين حاليًا ومدة عقد الإيجار المتبقية.', budgetSar: 1_200_000, status: 'new', createdAt: '2026-11-02T09:30:00+03:00', updatedAt: '2026-11-02T09:30:00+03:00' },
+    { id: 'demo-r2', counterpart: 'خالد (مستثمر ملائكي)', message: 'هل الترخيص قابل للنقل؟ وهل توجد التزامات على المنشأة؟', budgetSar: 900_000, status: 'new', createdAt: '2026-11-01T20:10:00+03:00', updatedAt: '2026-11-01T20:10:00+03:00' },
+    { id: 'demo-r3', counterpart: 'مكتب عائلي في الرياض', message: 'نود ترتيب زيارة للمركز الأسبوع القادم بعد مراجعة القوائم المالية.', budgetSar: 1_500_000, status: 'meeting', createdAt: '2026-10-20T11:00:00+03:00', updatedAt: '2026-10-29T15:00:00+03:00' },
+  ];
+  return [...base, ...extra.map((x) => ({ ...x, opportunityId: 1124, direction: 'received' as const }))];
 }
 
 /**

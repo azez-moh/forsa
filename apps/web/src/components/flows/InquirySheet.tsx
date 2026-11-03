@@ -59,7 +59,7 @@ export function InquirySheet({ o, open, onClose }: { o: Opportunity; open: boole
     if (!agree) e.agree = t('required');
     if (sig.trim().length < 3) e.sig = t('required');
     setErrors(e);
-    if (Object.keys(e).length === 0) setStep('otp');
+    if (!e.agree && !e.sig) setStep('otp');
   };
   const confirm = () => {
     if (!/^\d{4}$/.test(code)) {
@@ -160,10 +160,10 @@ export function InquirySheet({ o, open, onClose }: { o: Opportunity; open: boole
                 <li>{t('ndaBody3')}</li>
               </ul>
             </div>
-            <CheckboxRow checked={agree} onChange={setAgree} error={errors.agree}>
+            <CheckboxRow checked={agree} onChange={(v) => { setAgree(v); if (v) setErrors((e) => ({ ...e, agree: '' })); }} error={errors.agree || undefined}>
               {t('ndaAgree')}
             </CheckboxRow>
-            <TextField label={t('ndaSignLabel')} hint={t('ndaSignHint')} error={errors.sig} value={sig} onChange={(e) => setSig(e.target.value)} autoComplete="name" className="text-[20px] italic" />
+            <TextField label={t('ndaSignLabel')} hint={t('ndaSignHint')} error={errors.sig || undefined} value={sig} onChange={(e) => { setSig(e.target.value); if (errors.sig) setErrors((x) => ({ ...x, sig: '' })); }} autoComplete="name" className="text-[20px] italic" />
           </div>
         )}
 
