@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { ToastHost } from '@/components/ui';
 import { translate } from '@/i18n';
+import { listenForNotificationTaps, watchInquiryStatus } from '@/lib/notify';
 import { applyDirection } from '@/lib/reload';
 import { useApp } from '@/store/app';
 import { useTheme } from '@/theme';
@@ -24,6 +25,16 @@ export default function RootLayout() {
   const hydrated = useApp((s) => s.hydrated);
   const lang = useApp((s) => s.lang);
   const t = (k: Parameters<typeof translate>[1]) => translate(lang, k);
+
+  // US-IOS-05: local notification stubs (status changes) and deep links from tapped notifications.
+  useEffect(() => {
+    const a = watchInquiryStatus();
+    const b = listenForNotificationTaps();
+    return () => {
+      a();
+      b();
+    };
+  }, []);
 
   // Safety net: whatever happens with the direction reload, never leave the user on the splash.
   // After 2.5s the app shows in whatever direction it is currently in.

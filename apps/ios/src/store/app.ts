@@ -186,6 +186,8 @@ type State = {
   lastPublishedId: number | null;
   /** Guard for the one-time direction reload at launch (never loops). */
   rtlBootReloads: number;
+  /** US-IOS-05: the pre-permission explainer has been shown once. */
+  notifAsked: boolean;
 
   setLang: (l: 'ar' | 'en') => void;
   signIn: (s: Omit<Session, 'since'>) => void;
@@ -225,6 +227,7 @@ export const useApp = create<State>()(
       draft: null,
       lastPublishedId: null,
       rtlBootReloads: 0,
+      notifAsked: false,
 
       setLang: (lang) => set({ lang }),
       signIn: (s) => set({ session: { ...s, since: now() } }),

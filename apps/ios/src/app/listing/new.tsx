@@ -14,8 +14,9 @@ import { ScalePressable } from '@/components/Pressable';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Text } from '@/components/Text';
 import { Badge, Card, Chip, DemoTag, ErrorText } from '@/components/ui';
-import { useT, type StringKey } from '@/i18n';
+import { translate, useT, type StringKey } from '@/i18n';
 import { requireAuth } from '@/lib/auth';
+import { notifyLocal } from '@/lib/notify';
 import { cityName, parseAmount, priceInWords, sar, sarFull, stageLabel, TYPE_ORDER, typeColor, typeLong, typeSymbol } from '@/lib/format';
 import { haptic } from '@/lib/haptics';
 import { emptyDraft, useApp, type ListingDraft } from '@/store/app';
@@ -113,6 +114,9 @@ export default function AddWizard() {
       // Card flies into "فرصي" on the Profile tab; status flips to منشورة after ~3s (mock review).
       setTimeout(() => router.navigate('/profile'), 250);
       setTimeout(() => useApp.getState().markPublished(id), 3500);
+      // US-IOS-05 mock event: a first inquiry on the new listing → local notification to the Inbox.
+      const lang = useApp.getState().lang;
+      notifyLocal(translate(lang, 'notifNewInquiryTitle'), translate(lang, 'notifNewInquiryBody'), '/inbox', 8);
     });
   };
 

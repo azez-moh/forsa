@@ -43,7 +43,8 @@
           "supportsRTL": true
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-notifications"
     ],
     "extra": {
       "supportsRTL": true

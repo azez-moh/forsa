@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Field } from '@/components/Field';
 import { Icon } from '@/components/Icon';
+import { NotifyPrompt } from '@/components/NotifyPrompt';
 import { OtpInput } from '@/components/OtpInput';
 import { SheetHeader } from '@/components/SheetHeader';
 import { Text } from '@/components/Text';
@@ -258,6 +259,7 @@ export default function InquirySheet() {
                 </View>
               ))}
             </Card>
+            <NotifyPrompt />
           </Animated.View>
         ) : null}
       </ScrollView>
