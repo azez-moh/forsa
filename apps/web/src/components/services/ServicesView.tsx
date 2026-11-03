@@ -7,6 +7,7 @@ import { serviceCategories, services, type ServiceCategoryId } from '@forsa/data
 import { useApp } from '@/lib/store';
 import { formatSAR } from '@/lib/format';
 import { discountPercent, providerOf, serviceDuration } from '@/lib/services';
+import { arabicCopy } from '@/lib/services';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -48,7 +49,7 @@ export function ServicesView() {
               <li key={s.id}>
                 <Link href={`/services/${s.id}/`} className="flex h-full flex-col rounded-lg bg-bg-3 p-6 shadow-e1 ring-1 ring-separator/25 transition-shadow hover:shadow-e2">
                   <div className="flex items-start justify-between gap-3">
-                    <span className="grid size-11 place-items-center rounded-md bg-primary-tint text-primary">
+                    <span className="grid size-11 place-items-center rounded-md bg-primary-tint text-primary-text">
                       <Icon size={20} aria-hidden />
                     </span>
                     {off && (
@@ -58,7 +59,7 @@ export function ServicesView() {
                     )}
                   </div>
                   <h2 className="t-headline mt-4">{s.title}</h2>
-                  <p className="mt-1 line-clamp-2 text-[15px] text-label-2">{s.description}</p>
+                  <p className="mt-1 line-clamp-2 text-[15px] text-label-2">{arabicCopy(s.description)}</p>
                   <p className="mt-3 flex items-center gap-1 text-[13px] text-label-2">
                     {p?.certified && <BadgeCheck size={14} aria-hidden className="text-success" />}
                     <span className="line-clamp-1">{p?.name}</span>

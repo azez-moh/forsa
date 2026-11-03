@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { Breadcrumbs } from '@/components/layout/PageHeader';
+import { arabicCopy } from '@/lib/services';
 import { ConsultantAvatar, ReputationLabel } from '@/components/ui/Reputation';
 
 const AR_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -88,7 +89,7 @@ export function ConsultantDetailView({ c }: { c: Consultant }) {
             <h2 id="bio-h" className="t-title2 mb-4">
               {t('profile')}
             </h2>
-            <p className="max-w-[65ch] text-[17px] leading-[1.9]">{c.bio}</p>
+            <p className="max-w-[65ch] text-[17px] leading-[1.9]">{arabicCopy(c.bio)}</p>
           </section>
           <section className="mt-10" aria-labelledby="tags-h">
             <h2 id="tags-h" className="t-title2 mb-4">
@@ -179,7 +180,7 @@ export function ConsultantDetailView({ c }: { c: Consultant }) {
                       onClick={() => setSlot(s)}
                       className={cn(
                         'h-11 rounded-md text-[15px] font-bold tabular transition-colors',
-                        slot === s ? 'bg-primary text-on-primary' : 'bg-primary-tint text-primary hover:brightness-95',
+                        slot === s ? 'bg-primary text-on-primary' : 'bg-primary-tint text-primary-text hover:brightness-95',
                       )}
                     >
                       <bdi dir="ltr">{s}</bdi>
@@ -223,7 +224,7 @@ export function ConsultantDetailView({ c }: { c: Consultant }) {
       >
         {booked ? (
           <div className="flex flex-col items-center gap-4 py-6 text-center" role="status">
-            <span className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary">
+            <span className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary-text">
               <CalendarCheck size={36} strokeWidth={1.75} aria-hidden />
             </span>
             <p className="max-w-sm text-[15px] text-label-2">{t('bookedBody')}</p>

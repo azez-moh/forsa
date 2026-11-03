@@ -21,3 +21,15 @@ export const providerOf = (s: Service) => getProvider(s.providerId);
 
 /** Real public consultants only; invented placeholder profiles are not shown in the pitch. */
 export const publicConsultants = () => consultants.filter((c) => !c.placeholder);
+
+/**
+ * Editorial clean-up of Latin glosses in Arabic copy (QA P2-5). The data keeps the live-site wording;
+ * the redesign shows native business Arabic. Proper terms (SEO, IFRS, Excel, ROI) stay as they are.
+ */
+const GLOSSES: Array<[RegExp, string]> = [
+  [/\s*\(Business Model\)/g, ''],
+  [/Full Stack/g, 'تطوير الواجهات والخوادم'],
+];
+export function arabicCopy(s: string): string {
+  return GLOSSES.reduce((acc, [re, rep]) => acc.replace(re, rep), s);
+}

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
@@ -13,11 +14,11 @@ export function PageHeader({ title, lead, children, className, eyebrow }: { titl
   );
 }
 
-export function SectionHeader({ title, lead, action, className, onDark }: { title: string; lead?: string; action?: ReactNode; className?: string; onDark?: boolean }) {
+export function SectionHeader({ title, lead, action, className, onDark, id }: { title: string; lead?: string; action?: ReactNode; className?: string; onDark?: boolean; id?: string }) {
   return (
     <div className={cn('mb-8 flex flex-col gap-4 md:mb-12 md:flex-row md:items-end md:justify-between', className)}>
       <div className="max-w-2xl">
-        <h2 className={cn('t-display-m', onDark ? 'text-white' : 'text-label')}>{title}</h2>
+        <h2 id={id} className={cn('t-display-m', onDark ? 'text-white' : 'text-label')}>{title}</h2>
         {lead && <p className={cn('mt-3 text-[17px] leading-relaxed md:text-[19px]', onDark ? 'text-white/70' : 'text-label-2')}>{lead}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -33,9 +34,9 @@ export function Breadcrumbs({ items, label }: { items: Array<{ href?: string; la
           <li key={i} className="flex items-center gap-1.5">
             {i > 0 && <span aria-hidden className="text-label-3">›</span>}
             {it.href ? (
-              <a href={it.href} className="inline-flex min-h-8 items-center hover:text-label">
+              <Link href={it.href} className="inline-flex min-h-11 items-center hover:text-label">
                 {it.label}
-              </a>
+              </Link>
             ) : (
               <span aria-current="page" className="line-clamp-1 text-label">
                 {it.label}

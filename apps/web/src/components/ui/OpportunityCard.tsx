@@ -81,7 +81,7 @@ export function OpportunityCard({ o, priority, className, preview = false }: { o
             {o.ndaRequired && (
               <span className="inline-flex items-center gap-1 text-label-2">
                 <span aria-hidden>·</span>
-                <Lock size={12} aria-hidden /> NDA
+                <Lock size={12} aria-hidden /> {t('ndaShort')}
               </span>
             )}
           </p>
@@ -128,7 +128,7 @@ export function OpportunityCard({ o, priority, className, preview = false }: { o
         aria-label={`${saved ? t('saved') : t('save')}: ${o.title}`}
         className="absolute end-3 top-3 grid size-11 place-items-center rounded-full bg-bg/85 text-label shadow-e1 backdrop-blur transition-transform active:scale-[0.97]"
       >
-        <Bookmark size={18} aria-hidden className={saved ? 'fill-primary text-primary' : ''} />
+        <Bookmark size={18} aria-hidden className={saved ? 'fill-primary text-primary-text' : ''} />
       </button>}
     </article>
   );

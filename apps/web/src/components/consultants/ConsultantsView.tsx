@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { BadgeCheck } from 'lucide-react';
 import { useApp } from '@/lib/store';
-import { publicConsultants } from '@/lib/services';
+import { arabicCopy, publicConsultants } from '@/lib/services';
 import { Chip } from '@/components/ui/Chip';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -46,7 +46,7 @@ export function ConsultantsView() {
                     <p className="text-[15px] text-label-2">{c.specialty}</p>
                   </div>
                 </div>
-                <p className="line-clamp-3 text-[15px] leading-relaxed text-label-2">{c.bio}</p>
+                <p className="line-clamp-3 text-[15px] leading-relaxed text-label-2">{arabicCopy(c.bio)}</p>
                 <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
                   <Badge>
                     <bdi className="tabular">{c.yearsExperience}</bdi>&nbsp;{t('yearsExp')}

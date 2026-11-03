@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { MotionConfig } from 'motion/react';
 import { AppProvider, useApp } from '@/lib/store';
 import { ViewTransitionListener } from '@/lib/viewTransition';
+import { DocumentTitle } from '@/lib/DocumentTitle';
 import { GlassNav } from './GlassNav';
 import { TabBar } from './TabBar';
 import { Footer } from './Footer';
@@ -36,6 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <AuthSheet />
         <Toast />
         <ViewTransitionListener />
+        <DocumentTitle />
       </MotionConfig>
     </AppProvider>
   );

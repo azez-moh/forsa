@@ -55,12 +55,19 @@ export function SegmentedControl<V extends string>({
   const spring = motionTokens.spring.snappy.web;
 
   return (
-    <div className={cn(scroll && 'no-scrollbar -mx-5 overflow-x-auto px-5 md:mx-0 md:px-0', className)}>
+    <div
+      className={cn(
+        scroll &&
+          // Scroll affordance at narrow widths (QA P2-3): the far edge fades so a clipped segment reads as "more".
+          'no-scrollbar -mx-5 overflow-x-auto px-5 md:mx-0 md:px-0 max-md:[mask-image:linear-gradient(to_left,transparent,#000_40px,#000)] max-md:rtl:[mask-image:linear-gradient(to_right,transparent,#000_40px,#000)]',
+        className,
+      )}
+    >
       <div
         role="radiogroup"
         aria-label={label}
         onKeyDown={onKey}
-        className={cn('relative inline-flex w-max min-w-full items-stretch rounded-full bg-fill-3 p-[3px] md:min-w-0', size === 'sm' ? 'h-9' : 'h-11')}
+        className={cn('relative inline-flex w-max min-w-full items-stretch rounded-full bg-fill-3 p-[3px] md:min-w-0', size === 'sm' ? 'h-9' : 'h-[50px]')}
       >
         {segments.map((s, i) => {
           const active = s.value === value;
@@ -76,7 +83,8 @@ export function SegmentedControl<V extends string>({
               tabIndex={active ? 0 : -1}
               onClick={() => onChange(s.value)}
               className={cn(
-                'relative z-0 flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-bold transition-colors duration-200',
+                "relative z-0 flex min-w-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 font-bold transition-colors duration-200 before:absolute before:inset-x-0 before:content-['']",
+                size === 'sm' ? 'before:-inset-y-[7px]' : 'before:inset-y-0',
                 size === 'sm' ? 'text-[13px]' : 'text-[15px]',
                 active ? 'text-label' : 'text-label-2 hover:text-label',
               )}

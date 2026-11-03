@@ -6,6 +6,7 @@ import { getCity, type Service } from '@forsa/data';
 import { useApp } from '@/lib/store';
 import { formatSAR } from '@/lib/format';
 import { discountPercent, providerOf, serviceDuration } from '@/lib/services';
+import { arabicCopy } from '@/lib/services';
 import { Badge } from '@/components/ui/Badge';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
@@ -42,11 +43,11 @@ export function ServiceDetailView({ s }: { s: Service }) {
       </div>
       <div className="container-page mt-8 grid gap-12 lg:grid-cols-[1fr_360px]">
         <div className="min-w-0">
-          <span className="grid size-14 place-items-center rounded-lg bg-primary-tint text-primary">
+          <span className="grid size-14 place-items-center rounded-lg bg-primary-tint text-primary-text">
             <Icon size={26} aria-hidden />
           </span>
           <h1 className="t-display-m mt-6">{s.title}</h1>
-          <p className="mt-4 max-w-[65ch] text-[19px] leading-relaxed text-label-2">{s.description}</p>
+          <p className="mt-4 max-w-[65ch] text-[19px] leading-relaxed text-label-2">{arabicCopy(s.description)}</p>
 
           <div className="mt-12 grid gap-10">
             <section aria-labelledby="deliv-h">
@@ -57,13 +58,13 @@ export function ServiceDetailView({ s }: { s: Service }) {
                 <ul className="grid gap-3 sm:grid-cols-2">
                   {s.deliverables.map((d) => (
                     <li key={d} className="flex items-start gap-2 text-[17px]">
-                      <CheckCircle2 size={18} aria-hidden className="mt-1 shrink-0 text-primary" />
+                      <CheckCircle2 size={18} aria-hidden className="mt-1 shrink-0 text-primary-text" />
                       {d}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-[17px] text-label-2">{s.description}</p>
+                <p className="text-[17px] text-label-2">{arabicCopy(s.description)}</p>
               )}
             </section>
             {s.requirements?.length ? (
@@ -175,7 +176,7 @@ export function ServiceDetailView({ s }: { s: Service }) {
       >
         {done ? (
           <div className="flex flex-col items-center gap-4 py-6 text-center" role="status">
-            <span className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary">
+            <span className="grid size-20 place-items-center rounded-full bg-primary-tint text-primary-text">
               <CheckCircle2 size={40} strokeWidth={1.75} aria-hidden />
             </span>
             <p className="max-w-sm text-[15px] text-label-2">{t('serviceRequestedBody')}</p>

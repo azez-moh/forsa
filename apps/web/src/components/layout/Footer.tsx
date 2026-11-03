@@ -13,15 +13,15 @@ export function Footer() {
   const col = (title: string, links: Array<{ href: string; label: string; external?: boolean }>) => (
     <div>
       <h2 className="mb-4 text-[15px] font-bold text-white">{title}</h2>
-      <ul className="space-y-1">
+      <ul>
         {links.map((l) => (
           <li key={l.href + l.label}>
             {l.external ? (
-              <a href={l.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center text-[15px] text-white/65 hover:text-white">
+              <a href={l.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-[15px] text-white/65 hover:text-white">
                 {l.label}
               </a>
             ) : (
-              <Link href={l.href} className="inline-flex min-h-9 items-center text-[15px] text-white/65 hover:text-white">
+              <Link href={l.href} className="inline-flex min-h-11 items-center text-[15px] text-white/65 hover:text-white">
                 {l.label}
               </Link>
             )}
