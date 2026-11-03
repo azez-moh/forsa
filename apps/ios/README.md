@@ -84,13 +84,13 @@ cd apps/ios && npx expo-doctor                               # needs internet to
 | S02 | Opportunities: native search bar, type segmented control, filter sheet (category, city, log price steps, stage, verified, equity), sort action sheet, save search, pull to refresh | `src/app/(tabs)/opportunities/index.tsx` |
 | S03 | Opportunity detail: parallax hero, native zoom transition from the card, labelled metrics grid (**متاح بعد اتفاقية عدم الإفصاح** instead of 0), trust block, Face ID gated data room, Share sheet, sticky **طلب تواصل** button (owners see **إدارة الفرصة**) | `src/app/opportunity/[id].tsx` |
 | S04 | Inquiry form sheet: message, budget, timeline and investor type → NDA summary and full text, typed-name signature → OTP → success | `src/app/inquiry/[id].tsx` |
-| S05 | Add wizard (center **+**): type → basics (fields depend on the type) → numbers (price in words, "did you mean" fix) → photos and confidential files → review with the 2.5% commission disclosed at **انشر الفرصة** → card flies into فرصي | `src/app/listing/new.tsx` |
+| S05 | Add wizard (center **+**): type → basics (fields depend on the type) → numbers (price in words, "did you mean" fix) → photos (long-press to reorder) and confidential files → review with quality flags and the 2.5% commission disclosed at **انشر الفرصة** → card flies into فرصي | `src/app/listing/new.tsx` |
 | S06 | Inbox: owner pipeline (جديد → السرية → النقاش → اجتماع → مغلق), swipe actions, "نقل إلى…", grant access, decline, deal closed; investor conversations | `src/app/(tabs)/inbox/index.tsx` |
 | S06 | Profile: فرصي with stats, محفوظاتي, طلباتي, خدماتي ومواعيدي, language toggle, About and FAQ | `src/app/(tabs)/profile/index.tsx` |
 | S07–S08 | Services catalog and detail + request (providers with 0 orders show **مقدم خدمة جديد**) | `src/app/services/*` |
 | S09–S10 | Consultants list and profile + slot booking (fewer than 3 reviews shows **جديد على المنصة**) | `src/app/consultants/*` |
 | S11–S12 | Culture center videos (open YouTube in an in-app Safari sheet) and articles with linked opportunities | `src/app/learn/*` |
-| S13 | Auth sheet, shown only when an action needs it: +966 phone → OTP (one-time-code autofill) → name and role; mocked Nafath | `src/app/auth/index.tsx` |
+| S13 | Auth sheet, shown only when an action needs it (inquiry, publish, service request, booking, save search): +966 phone → OTP (one-time-code autofill) → name and one or more roles; mocked Nafath | `src/app/auth/index.tsx` |
 | S14 | About + contact, FAQ | `src/app/about.tsx`, `src/app/faq.tsx` |
 
 ### Demo script (about 3 minutes)
