@@ -9,3 +9,4 @@ ios/build/
 .env*
 !.env.example
 coverage/
+docs/qa/screens/
